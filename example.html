@@ -1,0 +1,64 @@
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="author" content="Programming by ..." />
+<meta name="keywords" content="KEYWORDS" />
+<meta name="description" content="DESCRIPTION" />
+<script type="text/javascript" src="../surebert/sb.js"></script>
+
+<title>SUREBERT PRACTICE XHTML SHELL</title>
+<style type="text/css">
+*{border:0;margin:0;padding:0;}
+
+#loadDataIntoMe{
+border:1px solid black;
+padding:10px;
+}
+
+button{
+margin:5px;
+}
+
+p{
+margin:5px;
+}
+</style>
+</head>
+<body>
+<button id="load">load data from server</button>
+<p id="loadDataIntoMe">
+Replace this data with data from the server when you press the button.
+</p>
+<div id="editBar"></div>
+<form>
+<textarea id="editBox">sdfsdfds dsf sdfsdf ds</textarea>
+</form>
+<script type="text/javascript">
+//use surebert here, this simple ajax demo is just to get you started, rememeber to always use surebert on an XHTML page
+sb.include('forms.textarea.textBling');
+
+var myBling = new sb.forms.textarea.textBling('#editBar', '#editBox');
+		
+customTags = ["q, e.g. [q]here is some quoted text[/q] - adds quote bubble around text", "box, e.g.[box]text in a box[/box] - great for code chunks"];
+
+myBling.custom(customTags);
+
+myBling.basic();
+s$('#load').events({
+	mousedown : function(){
+		var aj = new sb.ajax({
+			url : '../surebert/ie6.js',
+			debug : 1,
+			node : '#loadDataIntoMe',
+			method: 'get'
+			
+		});
+		aj.fetch();
+	}
+});
+</script>
+</body>
+</html>
