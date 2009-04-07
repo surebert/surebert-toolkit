@@ -1,6 +1,6 @@
 /**
 @Author: Paul Visco of http://paul.estrip.org
-@Version: 4.71 04/24/04 - 03/20/08
+@Version: 4.72 04/24/04 - 04/06/09
 @Package: surebert
 */
 
