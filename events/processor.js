@@ -132,7 +132,7 @@ sb.events.processor = {
 	@Name: sb.events.processor._handleEditor
 	@Description: Used internally to create editor
 	*/
-	_handleEditor : function(e, data){
+	_handleEditor : function(e, data, editor){
 		var self = this;
 		var target = e.target;
 		var sb_get_url = target.attr('sb_get_url');
@@ -186,6 +186,7 @@ sb.events.processor = {
 	@Description: Used internally to handle events
 	*/
 	_handleEvent : function(e){
+		
 		if(e.which && e.which != 1){
 			return false;
 		}
@@ -193,8 +194,20 @@ sb.events.processor = {
 		var target = e.target;
 		
 		var sb_set_url = target.attr('sb_set_url');
-		
-		if(!sb_set_url){
+	
+		if(!sb_set_url ){
+			
+			if(e.type == 'dblclick'){
+				var parent = target.getContaining('div');
+			
+				if(parent){
+					var e2 = sb.objects.copy(e);
+					e2.type = 'dblclick';
+					e2.target = parent;
+					return this._handleEvent(e2);
+				}
+			}
+			
 			return false;
 		}
 		
@@ -217,9 +230,9 @@ sb.events.processor = {
 		
 		var data = this._distillData(e);
 		var sb_editable = target.attr('sb_editable');
-		if(!sb_editable){
+		if(e.type == 'click' && !sb_editable){
 			this._handleSend(sb_set_url, data, target);
-		} else if(sb_editable && e.type == 'dblclick'){
+		} else if(e.type == 'dblclick' && sb_editable){
 			this._handleEditor(e, data);
 		}
 		
