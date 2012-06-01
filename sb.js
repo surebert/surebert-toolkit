@@ -1272,10 +1272,10 @@ sb.browser ={
 	*/
 	getAgent : function(){
 
-		var opera = new RegExp("opera/(\\d{1}.\\d{1})", "i");
+		var opera = new RegExp("opera/(\\d+.\\d+)", "i");
 		var safari = new RegExp("safari/(\\d{3})", "i");
-		var chrome = new RegExp("chrome/(\\d{1}\\.\\d{1})", "i");
-		var firefox = new RegExp("firefox/(\\d{1}.\\d{1})", "i");
+		var chrome = new RegExp("chrome/(\\d+\\.\\d+)", "i");
+		var firefox = new RegExp("firefox/(\\d+.\\d+)", "i");
 		var ie = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
 		var agent = window.navigator.userAgent;
 		var str;
