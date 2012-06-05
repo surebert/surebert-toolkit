@@ -695,10 +695,6 @@ e.g. 'p, b, #wrapper' Commas allow you to make multiple selections at once.This 
 e.g  '*:not(p)' LIMITED SUPPORT - returns all nodes that are not p tags
 */
 
-sb.$$ = function(selector, root){
-	return sb.$(selector, root, true);
-};
-
 sb.$ = function(selector, root, asNodeList) {
 
 	root = root || document;
@@ -729,509 +725,19 @@ sb.$ = function(selector, root, asNodeList) {
 	nodeList.setSelector(selector);
 
 	if(root.querySelectorAll){
-		nodeList.add(root.querySelectorAll(selector));
-
-	} else {
-		sb.$.parseSelectors(nodeList, root);
+		nodeList.push(root.querySelectorAll(selector));
 	}
 
 	if(asNodeList){
 		return nodeList;
 	}
 	
-	if(nodeList.length() === 0 && nodeList.selector.match(/^\#[\w\-]+$/) ){
+	if(nodeList.length === 0 && nodeList.selector.match(/^\#[\w\-]+$/) ){
 		return null;
-	} else if(nodeList.length() === 1 && (nodeList.selector.match(/^\#[\w\-]+$/) || sb.nodeList.singleTags.some(function(v){
-		return v === nodeList.selector;
-	}))){
-
-		return nodeList.nodes[0];
 	} else {
 		return nodeList;
 	}
 
-};
-
-sb.$.copyElementPrototypes = function(node){
-	var ep = Element.prototype,prop;
-	for(prop in ep){
-		if(ep.hasOwnProperty(prop)){
-			node[prop] = ep[prop];
-		}
-	}
-};
-
-/**
-@Name: sb.nodeList.parseInheritors
-@Param: inheritor
-@Param: within
-@Description: Used Internally
-*/
-sb.$.parseSelectors = function(nodes, within){
-
-	within = within || document;
-	var root = [within], s=0, selectors = nodes.selector.split(",");
-
-	var len = selectors.length;
-
-	for(s=0;s<len;s++){
-	
-		root = [within];
-
-		selectors[s].split(" ").forEach(function(selector,k,a){
-
-			if(selector.indexOf(">")+1){
-
-				root = sb.$.getElementsByParent(selector);
-
-				if(k+1 === a.length){
-					nodes.add(root);
-
-				}
-
-				return true;
-
-			} else if(selector.indexOf('[')+1){
-
-				///look for attribute's by searching for sqaure brackets //
-				root = sb.$.getElementsByAttributes(root, selector);
-
-				if(k+1 === a.length){
-					nodes.add(root);
-				}
-
-				return true;
-			} else if(selector.indexOf("~")+1){
-
-				root = sb.$.getElementsBySiblingCombinator(root, selector);
-
-				if(k+1 === a.length){
-					nodes.add(root);
-
-				}
-
-				return true;
-
-			} else if(selector.indexOf("+")+1){
-
-				root = sb.$.getElementsByAdjacentSibling(root, selector);
-
-				if(k+1 === a.length){
-					nodes.add(root);
-
-				}
-
-				return true;
-
-			} else if(selector.indexOf(":")+1){
-				//look for pseudo selectors
-				root = sb.$.parsePseudoSelectors(root, selector);
-
-				if(k+1 === a.length){
-					nodes.add(root);
-				}
-
-				return true;
-
-			} else if((selector.indexOf("#") === 0 && selector.match(/^\#[\w\-]+$/)) || selector.match(/\w+\#[\w\-]+/)) {
-
-				var element = sb.$.getElementById(selector);
-
-				if(element){
-					root = (element instanceof Array) ? element : [element];
-
-					if(k+1 === a.length){
-						nodes.add(root);
-
-					}
-				}
-
-				return true;
-
-			} else if (selector.indexOf(".") !== false){
-
-				var period_pos = selector.indexOf(".");
-
-				var left_bracket_pos = selector.indexOf("[");
-				var right_bracket_pos = selector.indexOf("]");
-
-				if(period_pos+1 && !(period_pos > left_bracket_pos && period_pos < right_bracket_pos)) {
-
-					root = sb.$.getElementsByClassName(selector, root[0]);
-
-					if(k+1 === a.length){
-						nodes.add(root);
-					}
-
-					return true;
-				}
-			}
-			
-			//Tag selectors - no class or id specified.
-			root = sb.$.getElementsByTagName(root, selector);
-
-			if(k+1 === a.length){
-				nodes.add(root);
-			}
-
-			return true;
-		});
-
-	}
-
-	return nodes;
-};
-
-/**
-@Name: sb.$.getElementById
-@Description: Used Internally
-*/
-sb.$.getElementById = function(selector){
-
-	var parts = selector.split("#");
-	var element = document.getElementById(parts[1]);
-	return element;
-};
-
-/**
-@Name: sb.$.getElementsByClassName
-@Param: string Selector The selector e.g. .myclass or div.myclass
-@Param: element The root to search within e.g. document, div
-@Description: Used Internally
-*/
-sb.$.getElementsByClassName = function(selector, root){
-
-	var nodes,elements = [],x=0;
-	
-	if(root.getElementsByClassName && selector.charAt(0) === '.'){
-
-		nodes = root.getElementsByClassName(selector.replace(/\./, ''));
-
-		for(x=0;x<nodes.length;x++){
-			elements.push(nodes[x]);
-		}
-		return elements;
-	}
-
-	var parts = selector.split('.');
-	nodes = root.getElementsByTagName(parts[0] || '*');
-	var className = parts[1], node, cur_class_name,len = nodes.length;
-	x=0;
-	var rg = RegExp("\\b"+className+"\\b");
-	
-	if(nodes.length > 0){
-		do{
-			node = nodes[x];
-			cur_class_name = node.className;
-			if (cur_class_name.length && (cur_class_name === className || rg.test(cur_class_name))){
-
-				elements.push(node);
-			}
-			x++;
-
-
-		} while(x<len);
-	}
-	return elements;
-};
-
-/**
-@Name: sb.$.getElementsByTagName
-@Description: Used Internally
-*/
-sb.$.getElementsByTagName = function(root, tag) {
-	root = (root instanceof Array) ? root : [root];
-
-	var matches = [],len1 = root.length,len2,x=0,i=0,nodes,elements;
-
-	for(x=0;x<len1;x++){
-
-		nodes = root[x].getElementsByTagName(tag || '*');
-		elements = [];
-		len2 = nodes.length;
-
-		for(i=0;i<len2;i++){
-			elements.push(nodes[i]);
-		}
-		matches = matches.concat(elements);
-	}
-
-	return matches;
-};
-
-/**
-@Name: sb.$.getElementsByAttributes
-@Description: Used Internally
-*/
-sb.$.getElementsByAttributes = function(within, selector){
-	var tag,attr,operator,value;
-
-	if (selector.match(/^(?:(\w*|\*))\[(\w+)([=~\|\^\$\*]?)=?['"]?([^\]'"]*)['"]?\]$/)) {
-		tag = RegExp.$1;
-		attr = (typeof sb.nodeList.attrConvert === 'function') ? sb.nodeList.attrConvert(RegExp.$2) : RegExp.$2;
-
-		operator = RegExp.$3;
-		value = RegExp.$4 ||'';
-	}
-
-	var elements = sb.$.getElementsByTagName(within, tag);
-
-	within = elements.filter(function(el,k,a){
-
-		el.attrVal = el.getAttribute(attr, 2);
-
-		//if attribute is null
-		if(!el.attrVal){
-			return false;
-		}
-
-		switch(operator){
-			case '=':
-				if(el.attrVal !== value){
-					return false;
-				}
-				break;
-
-			case '~':
-
-				if(!el.attrVal.match(new RegExp('(^|\\s)'+value+'(\\s|$)'))){
-					return false;
-				}
-				break;
-
-			case '|':
-
-				if(!el.attrVal.match(new RegExp(value+'-'))) {
-					return false;
-				}
-				break;
-
-			case '^':
-				if(el.attrVal.indexOf(value) !== 0){
-					return false;
-				}
-				break;
-
-			case '$':
-				if(el.attrVal.lastIndexOf(value)!==(el.attrVal.length-value.length)){
-					return false;
-				}
-				break;
-
-			case '*':
-				if(el.attrVal.indexOf(value)+1 === 0){
-					return false;
-				}
-				break;
-
-			default:
-				if(!el.getAttribute(attr)){
-					return false;
-				}
-		}
-
-		return true;
-
-	});
-
-	return within;
-
-};
-
-/**
-@Name: sb.$.getNextSibling
-@Description: Used Internally
-*/
-sb.$.getNextSibling = function(node){
-	while((node = node.nextSibling) && node.nodeType === 3){}
-	return node;
-};
-
-/**
-@Name: sb.$.getPreviousSibling
-@Description: Used Internally
-*/
-sb.$.getPreviousSibling = function(node){
-	while((node = node.previousSibling) && node.nodeType === 3){}
-	return node;
-};
-
-/**
-@Name: sb.$.getFirstChild
-@Description: Used Internally
-*/
-sb.$.getFirstChild = function(node){
-	node = node.firstChild;
-	while (node && node.nodeType && node.nodeType === 3) {
-		node = sb.$.getNextSibling(node);
-	}
-	return node;
-};
-
-/**
-@Name: sb.$.getLastChild
-@Description: Used Internally
-*/
-sb.$.getLastChild = function(node){
-
-	node = node.lastChild;
-	while (node && node.nodeType && node.nodeType === 3) {
-		node = sb.$.getPreviousSibling(node);
-	}
-	return node;
-};
-
-/**
-@Name: sb.$.getElementsByParent
-@Description: Used Internally
-*/
-sb.$.getElementsByParent = function(selector){
-	var parents ,n=0, tags = selector.split(">");
-
-	var elements = sb.$.getElementsByTagName([document.body], tags[1]);
-
-	var nodes = [];
-	var len = elements.length;
-
-	var rg = new RegExp(tags[0], 'i');
-
-	if(tags[0].match(/\./)){
-		parents = sb.$(tags[0]);
-	}
-	for(n;n<len;n++){
-		if(rg.test(elements[n].parentNode.nodeName) || (parents && parents.nodes.inArray(elements[n].parentNode))){
-			elements[n].sbid = sb.uniqueID();
-			nodes.push(elements[n]);
-		}
-	}
-
-	return nodes;
-
-};
-
-/**
-@Name: sb.$.getElementsBySiblingCombinator
-@Description: Used Internally
-*/
-sb.$.getElementsBySiblingCombinator = function(within, selector){
-	var parts = selector.split("~");
-
-	var nodeName = parts[0],siblingNodeName = parts[1],elements = [],x=0,nn;
-
-	var siblings = sb.$.getElementsByTagName(within, nodeName);
-	var len = siblings.length;
-
-	for(x=0;x<len;x++){
-		var node = siblings[x];
-
-		while((node = node.nextSibling)){
-			nn = node.nodeName.toLowerCase();
-			if(nn === nodeName){
-				break;
-			}
-			if(node.nodeType === 1 && nn === siblingNodeName){
-				node.sbid = sb.uniqueID();
-				elements.push(node);
-			}
-		}
-	}
-	return elements;
-
-};
-
-/**
-@Name: sb.$.getElementsByAdjacentSibling
-@Description: Used Internally
-*/
-sb.$.getElementsByAdjacentSibling = function(within, selector){
-	var parts = selector.split("+");
-
-	var nodeName =parts[0];
-	var adjacentNodeName = parts[1].toUpperCase();
-	var elements = sb.$.getElementsByTagName([document.body], nodeName);
-	elements = (!elements.length) ? [elements] : elements;
-	//put in the proper adajcent siblings
-	var nodes = [], x=0,node,len = elements.length;
-	for(x=0;x<len;x++){
-		node = sb.$.getNextSibling(elements[x]);
-		if(node && node.nodeName === adjacentNodeName){
-			nodes.push(node);
-		}
-	}
-
-	return nodes;
-
-};
-
-/**
-@Name: sb.$.parsePseudoSelectors
-@Description: Used Internally
-*/
-sb.$.parsePseudoSelectors = function(within, selector){
-
-	var notSelector,elements = [],parts = selector.split(":");
-
-	selector =parts[0];
-	var pseudo = parts[1];
-
-	var nodes = sb.$.getElementsByTagName(within, selector);
-
-	nodes.forEach(function(node,k,a){
-
-		switch(pseudo){
-
-			case 'before':
-
-				var bf = new sb.element({
-					nodeName : 'span',
-					innerHTML : 'ddd'
-				}).appendToTop(node);
-				elements.push(bf);
-
-				break;
-
-			case 'first-child':
-
-				if(!sb.$.getPreviousSibling(node)){
-					elements.push(node);
-				}
-				break;
-
-			case 'last-child':
-				if(!sb.$.getNextSibling(node)){
-					elements.push(node);
-				}
-				break;
-
-			case 'empty':
-				if(node.innerHTML ===''){
-					elements.push(node);
-				}
-				break;
-
-			case 'only-child':
-
-				if(!sb.$.getPreviousSibling(node) && !sb.$.getNextSibling(node)){
-					elements.push(node);
-				}
-
-				break;
-
-			default:
-
-				if(pseudo.indexOf('not')+1){
-					notSelector = pseudo.match(/not\((.*?)\)/);
-
-					if(node.nodeName.toLowerCase() !== notSelector[1]){
-						elements.push(node);
-					}
-				}
-		}
-
-
-	});
-
-	return elements;
 };
 
 /**
@@ -1516,33 +1022,37 @@ sb.objects = {
 	}
 };
 
+
 /**
 @Name: sb.nodeList
 @Description: Used to create sb.nodeLists which are groups of sb.elements that have many of the same methods as sb.element but which act on all sb.elements in the sb.nodeList. It also has all the properties of an sb.array. These are returned by sb.s$
 */
 //sb.nodeList
 sb.nodeList = function(params){
+	params = params || {};
+	this.sb_ids = {};
+	
 	var prop;
 	for(prop in params){
 		this[prop] = params[prop];
 	}
-
-	//initialize internal arrays
-	this.nodes = [];
-	this.sb_ids = {};
-
-	var nls= this;
-	['forEach', 'map', 'filter', 'every', 'some', 'indexOf', 'lastIndexOf', 'inArray'].forEach(function(v,k,a){
-		nls[v] = function(func){
-			if(v === 'forEach'){
-				nls.nodes[v](func);
-				return nls;
-			}
-			return nls.nodes[v](func);
-		};
-	});
+	
+	return this;
 
 };
+
+/**
+@Name: sb.nodeList.prototype.$
+@Description: returns matching elements within the element
+@Example:
+var myDiv = $('#mdiv');
+myDiv.$('.someClass');
+*/
+sb.nodeList.$ = function(selector){
+	return sb.$(selector, this[0]);
+};
+
+sb.nodeList.prototype = new Array();
 
 sb.nodeList.copyFunc = function(prop, node){
 	return function(){
@@ -1551,180 +1061,365 @@ sb.nodeList.copyFunc = function(prop, node){
 	};
 };
 
-sb.nodeList.prototype = {
+/**
+@Name: sb.nodeList.prototype.selector
+@Description: The CSS selector used to find the nodes
+*/
+sb.nodeList.prototype.selector = '';
 
-	/**
-	@Name: sb.nodeList.prototype.selector
-	@Description: The CSS selector used to find the nodes
-	*/
-	selector : '',
+/**
+@Name: sb.nodeList.prototype.empty
+@Description: Empties the nodes array
+*/
+sb.nodeList.prototype.empty = function(){
+	return new sb.nodeList();
+};
+	
+/**
+@Name: sb.nodeList.prototype.push
+@Param: An array of other nodes to add
+@Description: Adds more nodes to the nodeList nodes array and assigns sb_ids or adds super element properties if required
+@Example:
+var nodes = $('ol li');
+//adds element with id 'wrapper' to the node list
+nodes.push($('#wrapper'));
+*/
+sb.nodeList.prototype.push = function(nodes){
+	
+	if(nodes === null  || nodes.length === 0){
+		return false;
+	}
 
-	/**
-	@Name: sb.nodeList.prototype.getElementPrototypes
-	@Description: Re-assigns Element.prototypes of the nodes in the .nodes array to make sure that it picks up any Element.prototypes that have been added after the $ selection was made.  This is only required in IE since the other browsers all respect actual Element.protoype
-	*/
-	getElementPrototypes : function(){
+	if(!nodes.length){
+		nodes = [nodes];
+	}
 
-		var x,prop,ep = Element.prototype,len = this.nodes.length;
+	var len = nodes.length;
 
-		for(x=0;x<len;x++){
-			for(prop in ep){
-				this.nodes[x][prop] = ep[prop];
+	var prop,x=0,node;
+
+	var emulated = Element.emulated;
+	var ep = Element.prototype;
+
+	for(x=0;x<len;x++){
+		node=nodes[x];
+		var sb_id = node.getAttribute('sb_id');
+		if(!sb_id){
+			sb_id = sb.nodeList.sb_id++;
+			node.setAttribute('sb_id',  sb_id);
+		}
+
+		if(!this.sb_ids[sb_id]){
+
+			if(!node.xml && emulated){
+				for(prop in ep){
+					node[prop] = ep[prop];
+				}
+			}
+			
+			Array.prototype.push.call(this, node);
+			this.sb_ids[sb_id] = true;
+		}
+
+	}
+};
+
+/**
+@Name: sb.nodeList.prototype.drop
+@Description: drop dom nodes, either array o single node from a sb.nodeList
+@Example:
+var nodes = $('ol li');
+//adds element with id 'wrapper' to the node list
+nodes.drop('#wrapper');
+//add all the links to the sb.nodeList
+nodes.drop('a');
+*/
+sb.nodeList.prototype.drop = function(el){
+
+	var t = this;
+	el = sb.$(el);
+	var nl = new sb.nodeList();
+	
+	nl.push(t.filter(function(v){
+		if(sb.typeOf(el) === 'sb.element'){
+			return v !== el;
+		}
+
+	}));
+	return nl;
+};
+
+/**
+@Name: sb.nodeList.prototype.setSelector
+@Param: string selector e.g. h1#wrapper
+@Description: Used Internally. the CSS selector used to find populate the initial nodes array
+*/
+sb.nodeList.prototype.setSelector = function(selector){
+	this.selector = sb.nodeList.cleanSelector(selector);
+
+};
+
+/**
+@Name: sb.nodeList.prototype.styles(o)
+@Description: Runs the style method of each node in the nodeList and pass the o style object
+@Example:
+
+var nodeList = $('li,p');
+nodeList.styles({
+	backgroundColor : 'red',
+	color: 'yellow'
+});
+*/
+sb.nodeList.prototype.styles = function(styles){
+	
+	for(var style in styles){
+		this.setStyle(style, styles[style]);
+	}
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.setStyle(prop, val)
+@Description: Sets a style property style for each node in the nodeList
+@Example:
+var nodeList = $('li,p');
+nodeList.setStyle('backgroundColor', 'red');
+*/
+sb.nodeList.prototype.setStyle = function(prop, val){
+	this.forEach(function(el){
+		if(sb.styles.pxProps.inArray(prop) && val !== '' && !val.match(/em|cm|pt|px|%/)){
+			val +='px';
+		}
+
+		if(prop === 'opacity' && typeof el.style.filter === 'string' && typeof el.style.zoom === 'string'){
+			el.style.opacity = val;
+			el.style.zoom = 1;
+			el.style.filter = "alpha(opacity:"+val*100+")";
+		} else {
+
+			if(prop === 'cssFloat' && typeof el.style.styleFloat === 'string'){
+				prop = 'styleFloat';
+			}
+
+			if(typeof el.style[prop] === 'string'){
+				el.style[prop] = val;
+			} else {
+				throw("style["+prop+"] does not exist in el browser's style implemenation");
 			}
 		}
+	});
+};
 
-	},
+/**
+@Name: sb.nodeList.prototype.getStyle(prop, val)
+@Description: Gets a style property style for each node in the nodeList, returns array
+@Example:
+var nodeList = $('li,p');
+nodeList.getStyle('backgroundColor');
+*/
+sb.nodeList.prototype.getStyle = function(prop, val){
+	var vals = [];
+	this.forEach(function(el){
+		var val;
 
-	/**
-	@Name: sb.nodeList.prototype.empty
-	@Description: Empties the nodes array
-	*/
-	empty : function(){
-		this.nodes = [];
-
-	},
-
-	/**
-	@Name: sb.nodeList.prototype.setSelector
-	@Param: string selector e.g. h1#wrapper
-	@Description: Used Internally. the CSS selector used to find populate the initial nodes array
-	*/
-	setSelector : function(selector){
-		this.selector = sb.nodeList.cleanSelector(selector);
-
-	},
-
-	/**
-	@Name: sb.nodeList.prototype.add
-	@Param: An array of other nodes to add
-	@Description: Adds more nodes to the nodeList nodes array and assigns sb_ids or adds super element properties if required
-	@Example:
-	var nodes = $('ol li');
-	//adds element with id 'wrapper' to the node list
-	nodes.add($('#wrapper'));
-
-	*/
-
-	add : function(nodes){
-
-		if(nodes === null  || nodes.length === 0){
-			return false;
+		if(prop.match(/^border$/)){
+			prop = 'border-left-width';
 		}
 
-		if(!nodes.length){
-			nodes = [nodes];
+		if(prop.match(/^padding$/)){
+			prop = 'padding-left';
 		}
 
-		var len = nodes.length;
+		if(prop.match(/^margin$/)){
+			prop = 'margin-left';
+		}
 
-		var prop,x=0,node;
+		if(prop.match(/^border-color$/)){
+			prop = 'border-left-color';
+		}
 
-		var emulated = Element.emulated;
-		var ep = Element.prototype;
+		if (el.style[prop]) {
+			val = el.style[prop];
 
-		for(x=0;x<len;x++){
-			node=nodes[x];
-			var sb_id = node.getAttribute('sb_id');
-			if(!sb_id){
-				sb_id = sb.nodeList.sb_id++;
-				node.setAttribute('sb_id',  sb_id);
-			}
+		} else if (el.currentStyle) {
 
-			if(!this.sb_ids[sb_id]){
+			prop = prop.toCamel();
+			val = el.currentStyle[prop];
 
-				if(!node.xml && emulated){
-					for(prop in ep){
-						node[prop] = ep[prop];
+		} else if (document.defaultView && document.defaultView.getComputedStyle) {
+
+			prop = prop.replace(/([A-Z])/g, "-$1");
+			prop = prop.toLowerCase();
+
+			val = document.defaultView.getComputedStyle(el,"").getPropertyValue(prop);
+
+		} else {
+			val=null;
+		}
+
+		if(prop === 'opacity' && val === undefined){
+			val = 1;
+		}
+
+		if(val){
+
+			if(typeof val === 'string'){
+
+				val = val.toLowerCase();
+				if(val === 'rgba(0, 0, 0, 0)'){
+					val = 'transparent';
+				}
+
+				if(typeof sb.colors.html !== 'undefined'){
+					if(sb.colors.html[val]){
+						val = sb.colors.html[val].hex2rgb();
 					}
 				}
 
-				this.nodes.push(node);
-				this.sb_ids[sb_id] = true;
-			}
+				if(val.match("^#")){
+					val = val.hex2rgb();
+				}
 
+			}
+			vals.push(val);
+		} else {
+			vals.push(null);
 		}
-	},
+	});
 	
-	/**
-	@Name: sb.nodeList.prototype.drop
-	@Description: drop dom nodes, either array o single node from a sb.nodeList
-	@Example:
-	var nodes = $('ol li');
-	//adds element with id 'wrapper' to the node list
-	nodes.drop('#wrapper');
-	//add all the links to the sb.nodeList
-	nodes.drop('a');
-	*/
-	drop : function(el){
+	return vals;
+	
+}
 
-		var t = this;
-		el = sb.$(el);
-
-		this.nodes = t.nodes.filter(function(v){
-			if(sb.typeOf(el) === 'sb.element'){
-				return v !== el;
-			} else {
-				return !el.nodes.some(function(v1){
-					return v===v1;
-				});
+/**
+@Name: sb.nodeList.prototype.attr
+@Description: Gets the attribute valur or sets the attribute of an element to the value given
+@Example:
+el.attr('some_attribute');
+el.attr('some_attribute', 'some value');
+el.attr('some_attribute', function(){return 'some value';});
+*/
+sb.nodeList.prototype.attr = function(attr, val){
+	
+	var ret = null
+	var t=this;
+	this.forEach(function(el){
+		var prop;
+		if(typeof attr === 'object'){
+			for(prop in attr){
+				el.setAttribute(prop, attr[prop]);
+			}
+			ret = t;
+		} else if(typeof val !== 'undefined'){
+			if(typeof val === 'function'){
+				val = val.call(this);
 			}
 
-		});
-		this.length = this.nodes.length;
+			el.setAttribute(attr, val);
 
-		return this;
-	},
-
-	/**
-	@Name: sb.nodeList.prototype.length()
-	@Description: Return the length of the this.nodes array which represents how many nodes the nodeList instance is holding
-	*/
-	length : function(){
-		return this.nodes.length;
-	},
-
-	/**
-	@Name: sb.nodeList.prototype.firePerNode()
-	@Description: Return the func passing the node as first argument as any addition args as arguments
-	@Example:
-	var nodeList = $('li,p');
-	nodeList.firePerNode(Element.prototype.flashBg);
-	*/
-	firePerNode : function(func){
-		var args = sb.toArray(arguments);
-		var func = args.shift();
-		var f = function(v){
-			return func.apply(v, args);
-		};
-		this.nodes.forEach(f);
-		return this;
-	},
-
-	/**
-	@Name: sb.nodeList.prototype.styles(o)
-	@Description: Runs the style method of each node in the nodeList and pass the o style object
-	@Example:
-
-	var nodeList = $('li,p');
-	nodeList.styles({
-		backgroundColor : 'red',
-		color: 'yellow'
+			ret = t;
+		} else {
+			ret = el.getAttribute(attr);
+		}
 	});
-	*/
-	styles : function(styles){
-		return this.firePerNode(Element.prototype.styles, styles);
-	},
 	
-	/**
-	@Name: sb.nodeList.prototype.typeOf
-	@Description: Used Internally for sb.typeOf
-	*/
-	typeOf : function(){
-
-		return 'sb.nodeList';
-	}
-
+	return ret;
+	
 };
+
+
+/**
+@Name: sb.nodeList.prototype.addClassName
+@Type: function
+@Description: Adds a className to the nodes
+@Param: String c The classname to add
+@Return: returns itself
+@Example:
+myElement.addClassName('redStripe');
+*/
+sb.nodeList.prototype.addClassName = function(className){
+	this.forEach(function(el){
+		el.className += ' '+className;
+	});
+	
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.hasClassName
+@Type: function
+@Description: Checks to see if the element/elements have the className specified.  Elements can have more than one className.
+@Return: Boolean True if the element contains the className and False if it doesn't
+@Param: String c The className to check for
+@Example:
+myElement.hasClassName('redStripe');
+*/
+sb.nodeList.prototype.hasClassName = function(classname){
+	return this.every(function(el){
+		return this.className.match("\\b"+classname+"\\b");
+	});
+};
+
+/**
+@Name: sb.nodeList.prototype.removeClassName
+@Type: function
+@Description: Removes a className from the elements className array.  Elements can have more than one className
+@Param: String c Specified the className to remove from the element
+@Return: returns itself
+@Example:
+myElement.removeClassName('redStripe');
+*/
+sb.nodeList.prototype.removeClassName = function(className){
+	this.forEach(function(el){
+		el.className = el.className.replace(new RegExp("\b*"+className+"\b*"), "");
+	});
+	
+	return this;
+};
+
+
+
+/**
+@Name: sb.nodeList.prototype.html
+@Type: function
+@Param: none - means get innerHTML, value = set innerHTML, function = set innerHTML
+@Description: Gets/Sets the innerHTML of an element
+@Return: The string when getting and the element itself in all other cases
+
+@Example:
+el.html(function(){return this.innerHTML+='sss';});
+myElement.html('<p>hello world</p>');
+var str = myElement.html(); //hello world
+
+*/
+sb.nodeList.prototype.html = function(html){
+	
+	var ret = null
+	var t= this;
+	this.forEach(function(el){
+		if(typeof html === 'undefined'){
+			ret = el.innerHTML;
+		} else if(typeof html === 'function'){
+			ret = el.innerHTML = html.call(this);
+		} else {
+			el.innerHTML = html;
+			ret = t;
+		}
+	});
+	
+	return ret;
+	
+};
+
+/**
+@Name: sb.nodeList.prototype.typeOf
+@Description: Used Internally for sb.typeOf
+*/
+sb.nodeList.prototype.typeOf = function(){
+
+	return 'sb.nodeList';
+};
+
 
 sb.nodeList.cleanSelector = function(selector){
 
@@ -2722,60 +2417,6 @@ if(typeof Element === 'undefined'){
 }
 
 /**
-@Name: sb.element.protoype
-@Description: returns matching elements within the element
-@Example:
-var myDiv = $('#mdiv');
-myDiv.$('.someClass');
-*/
-Element.prototype.$ = function(selector){
-	return sb.$(selector, this);
-};
-
-/**
-@Name: Element.prototype.attr
-@Description: Gets the attribute valur or sets the attribute of an element to the value given
-@Example:
-el.attr('some_attribute');
-el.attr('some_attribute', 'some value');
-el.attr('some_attribute', function(){return 'some value';});
-*/
-Element.prototype.attr = function(attr, val){
-	var prop;
-	if(typeof attr === 'object'){
-		for(prop in attr){
-			this.setAttribute(prop, attr[prop]);
-		}
-		return this;
-	} else if(typeof val !== 'undefined'){
-		if(typeof val === 'function'){
-			val = val.call(this);
-		}
-		
-		this.setAttribute(attr, val);
-
-		return this;
-	} else {
-		return this.getAttribute(attr);
-	}
-};
-
-/**
-@Name: Element.prototype.addClassName
-@Type: function
-@Description: Adds a className to the sb.element, using this methods sb.element instances can have multiple classNames
-@Param: String c The classname to add
-@Return: returns itself
-@Example:
-myElement.addClassName('redStripe');
-*/
-Element.prototype.addClassName = function(className){
-	this.className += ' '+className;
-
-	return this;
-};
-
-/**
 @Name: Element.prototype.append
 @Type: function
 @Description: Appends another DOM element to the element as a child
@@ -2908,45 +2549,6 @@ Element.prototype.getY = function(){
 };
 
 /**
-@Name: Element.prototype.html
-@Type: function
-@Param: none - means get innerHTML, value = set innerHTML, function = set innerHTML
-@Description: Gets/Sets the innerHTML of an element
-@Return: The string when getting and the element itself in all other cases
-
-@Example:
-el.html(function(){return this.innerHTML+='sss';});
-myElement.html('<p>hello world</p>');
-var str = myElement.html(); //hello world
-
-*/
-Element.prototype.html = function(html){
-	if(typeof html === 'undefined'){
-		return this.innerHTML;
-	} else if(typeof html === 'function'){
-		this.innerHTML = html.call(this);
-	} else {
-		this.innerHTML = html;
-	}
-
-	return this;
-};
-
-/**
-@Name: Element.prototype.hasClassName
-@Type: function
-@Description: Checks to see if the element has the className specified.  Elements can have more than one className.
-@Return: Boolean True if the element contains the className and False if it doesn't
-@Param: String c The className to check for
-@Example:
-myElement.hasClassName('redStripe');
-*/
-Element.prototype.hasClassName = function(classname){
-
-	return this.className.match("\\b"+classname+"\\b");
-};
-
-/**
 @Name: Element.prototype.remove
 @Type: function
 @Description: Removes an element from the DOM
@@ -2958,20 +2560,6 @@ Element.prototype.remove = function(){
 	if(this.parentNode){
 		this.parentNode.removeChild(this);
 	}
-	return this;
-};
-
-/**
-@Name: Element.prototype.removeClassName
-@Type: function
-@Description: Removes a className from the elements className array.  Elements can have more than one className
-@Param: String c Specified the className to remove from the element
-@Return: returns itself
-@Example:
-myElement.removeClassName('redStripe');
-*/
-Element.prototype.removeClassName = function(className){
-	this.className = this.className.replace(new RegExp("\b*"+className+"\b*"), "");
 	return this;
 };
 
