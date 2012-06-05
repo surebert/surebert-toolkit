@@ -639,8 +639,26 @@ var sb = {
 	@Name: sb.forms
 	@Description: Used Internally. A placeholder for sb.forms
 	*/
-	forms : {}
-
+	forms : {},
+	
+	/**
+	@Name : sb.array
+	@Description: Used internally
+	*/
+	array : {
+		/**
+		@Name: sb.array.push
+		@Description: Used internally for clean reference to method
+		*/
+		push : Array.prototype.push,
+		
+		/**
+		@Name: sb.array.slice
+		@Description: Used internally for clean reference to method
+		*/
+		slice : Array.prototype.slice
+	}
+	
 };
 
 /**
@@ -694,6 +712,7 @@ e.g. 'p, b, #wrapper' Commas allow you to make multiple selections at once.This 
 e.g  '*:not(p)' LIMITED SUPPORT - returns all nodes that are not p tags
 */
 
+
 sb.$ = function(selector, root, asNodeList) {
 
 	root = root || document;
@@ -704,18 +723,7 @@ sb.$ = function(selector, root, asNodeList) {
 	
 	//return items that are already objects
 	if(typeof selector !== 'string'){
-
-		if(Element.emulated === true && typeof selector === 'object' && selector !== null){
-			
-			if(selector.nodeType && selector.nodeType === 1){
-				sb.$.copyElementPrototypes(selector);
-				
-			} else if (typeof selector.getElementPrototypes === 'function'){
-				
-				selector.getElementPrototypes();
-			}
-		}
-
+		
 		return selector;
 	}
 
@@ -744,17 +752,6 @@ sb.$ = function(selector, root, asNodeList) {
 @Description: Find out what browser we are using and gets the query string and screen data
 */
 sb.browser ={
-
-	/**
-	@Name: sb.browser.ie6
-	@Type: boolean
-	@Description: Is the page being displayed with IE 6. Normally you would access this information through sb.browser.agent and sb.browser.version but I added this for convenience with ie6
-	@Example.
-	if(sb.browser.ie6){
-		//do something
-	}
-	*/
-	ie6 : 0,
 
 	/**
 	@Name: sb.browser.agent
@@ -791,23 +788,22 @@ sb.browser ={
 			this.version = str[1];
 
 		} else if (document.all){
+			
 			var dbs=document.body.style;
 			this.agent = 'ie';
-			if(dbs.opacity!=undefined) {
-				this.version = 9;
-			} else if(dbs.msBlockProgression!=undefined){
-				this.version = 8;
-				if (ie.exec(agent) != null){
-					this.version = parseFloat(RegExp.$1);
-				}
-			} else if(dbs.msInterpolationMode!=undefined){
-				this.version = 7;
-			} else if(dbs.textOverflow!=undefined){
-				this.version = 6;
-				sb.browser.ie6 =1;
+			
+			if (document.documentMode) {
+				this.version = document.documentMode;
 			} else {
 				this.version = 5;
+				if (document.compatMode && document.compatMode == "CSS1Compat"){
+					this.version = 7; // standards mode
+				} else if(dbs.textOverflow!=undefined){
+					this.version = 6;
+				}
+			
 			}
+
 		} else if(agent.match(firefox)){
 			this.agent = 'ff';
 			str = agent.match(firefox);
@@ -1060,6 +1056,13 @@ sb.nodeList.copyFunc = function(prop, node){
 	};
 };
 
+
+/**
+@Name: sb.nodeList.prototype.length
+@Description: The default length
+*/
+sb.nodeList.prototype.length = 0;
+
 /**
 @Name: sb.nodeList.prototype.selector
 @Description: The CSS selector used to find the nodes
@@ -1073,6 +1076,24 @@ sb.nodeList.prototype.selector = '';
 sb.nodeList.prototype.empty = function(){
 	return new sb.nodeList();
 };
+
+
+/**
+@Name: sb.nodeList.prototype.getElementPrototypes
+@Description: Re-assigns Element.prototypes of the nodes in the .nodes array to make sure that it picks up any Element.prototypes that have been added after the $ selection was made.  This is only required in IE since the other browsers all respect actual Element.protoype
+*/
+sb.nodeList.prototype.getElementPrototypes = function(){
+
+	var x,prop,ep = Element.prototype,len = this.length;
+
+	for(x=0;x<len;x++){
+		for(prop in ep){
+			this[x][prop] = ep[prop];
+		}
+	}
+
+};
+
 	
 /**
 @Name: sb.nodeList.prototype.push
@@ -1117,6 +1138,7 @@ sb.nodeList.prototype.push = function(nodes){
 			}
 			
 			Array.prototype.push.call(this, node);
+			
 			this.sb_ids[sb_id] = true;
 		}
 
@@ -1156,6 +1178,242 @@ sb.nodeList.prototype.drop = function(el){
 sb.nodeList.prototype.setSelector = function(selector){
 	this.selector = sb.nodeList.cleanSelector(selector);
 
+};
+
+/**
+@Name: sb.nodeList.prototype.first
+@Description: returns the first item in a new sb.nodeList
+*/
+sb.nodeList.prototype.first = function(){
+	var nl = new sb.nodeList();
+	nl.push(this[0]);
+	return nl;
+};
+
+/**
+@Name: sb.nodeList.prototype.last
+@Description: returns the first item in a new sb.nodeList
+*/
+sb.nodeList.prototype.last = function(){
+	var nl = new sb.nodeList();
+	nl.push(this[this.length-1]);
+	return nl;
+};
+
+/**
+@Name: sb.nodeList.prototype.toArray
+@Description: returns nodesList as a plain array
+*/
+sb.nodeList.prototype.toArray = function(){
+	return Array.prototype.slice.call(this);
+};
+
+/**
+@Name: sb.nodeList.prototype.size
+@Description: returns length of the nodeList
+*/
+sb.nodeList.prototype.size = function(){
+	return this.length;
+};
+
+/**
+@Name: sb.nodeList.prototype.size
+@Description: returns length of the nodeList
+*/
+sb.nodeList.prototype.get = function(i){
+	return i !== 'undefined' ? this.toArray()[i] : this.toArray();
+};
+
+/**
+@Name: sb.nodeList.prototype.append
+@Type: function
+@Description: Appends another DOM element to the element as a child
+@Param: sb.NodeList, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
+@Example:
+$('#myDiv').append($('#otherdiv'));
+*/
+sb.nodeList.prototype.append = function(el){
+	var c,x = 0;
+	
+	el = sb.$(el);
+	
+	this.forEach(function(n){
+		
+		if(x > 0){
+			c = el.get(0).cloneNode(true);
+			n.appendChild(c);
+		} else {
+			n.appendChild(el.get(0));
+		}
+		
+		x++;
+	});
+	
+	return this;
+};
+
+
+/**
+@Name: sb.nodeList.prototype.appendTo
+@Type: function
+@Description: Appends the element to another DOM element as a child
+@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
+@Return: Element A refernce to the appended node
+@Example:
+//appends $('#someEl') to the page body
+$('#someEl').appendTo('body');
+
+//appends $('#someEl') to a div with the ID "myDiv"
+$('#someEl').appendTo('#myDiv');
+
+*/
+sb.nodeList.prototype.appendTo = function(el){
+	
+	var t=this,c,x = 0,el = sb.$(el);
+	
+	this.forEach(function(n){
+		var i=0;
+		el.forEach(function(elc){
+			if(i > 0){
+				n = n.cloneNode(true);
+			}
+			elc.appendChild(n);
+			i++;
+		});
+	});
+	
+	return this;
+};
+
+
+/**
+@Name: sb.nodeList.prototype.appendToTop
+@Type: function
+@Description: Appends the element to the top DOM element as a child
+@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
+@Return: Element A refernce to the appended node
+@Example:
+//appends myElement to the page body
+myElement.appendToTop('body');
+
+//appends myElement to a div with the ID "myDiv"
+myElement.appendToTop('#myDiv');
+
+*/
+sb.nodeList.prototype.appendToTop = function(el){
+	
+	var t=this,c,i=0,el = sb.$(el);
+	
+	this.forEach(function(n){
+		
+		el.forEach(function(elc){
+			if(i > 0){
+				n = n.cloneNode(true);
+			}
+			elc.appendChild(n);
+			if(elc.childNodes.length === 0){
+				n.appendTo(elc);
+			} else {
+				n.appendBefore(elc.firstChild);
+			}
+			
+			i++;
+		});
+	});
+	
+	return this;
+};
+
+
+
+/**
+@Name: sb.nodeList.prototype.appendAfter
+@Type: function
+@Description: Appends the element after another DOM element as a sibling
+@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
+@Example:
+//appends myElement to the parent of "#myDiv" as a sibling of "#myDiv" directly after "#myDiv"
+myElement.appendAfter('#myDiv');
+
+*/
+sb.nodeList.prototype.appendAfter = function(el){
+	
+	var t=this,c,i=0,el = sb.$(el);
+	
+	this.forEach(function(n){
+		i=0;
+		el.forEach(function(elc){
+			if( i > 0 && t.length && el.length > 1){
+				n = n.cloneNode(true);
+			}
+			
+			var b = elc,nxtSib = elc.nextSibling || false;
+	
+			if(elc.nextSibling && elc.nodeType !== 3){
+				while((elc = elc.nextSibling) && elc.nodeType === 3){
+					nxtSib = elc;
+				}
+			}
+			if(nxtSib){
+				
+				nxtSib.parentNode.insertBefore(n, nxtSib);
+			} else {
+				b.parentNode.appendChild(n);
+			}
+	
+			i++;
+		});
+	});
+	
+	return this;
+};
+
+
+/**
+@Name: sb.nodeList.prototype.appendBefore
+@Type: function
+@Description: Appends the element before another DOM element as a sibling
+@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
+@Example:
+//appends myElement to the parent of "#myDiv" as a sibling of "#myDiv" directly before "#myDiv"
+myElement.appendBefore('#myDiv');
+
+*/
+
+sb.nodeList.prototype.appendBefore = function(el){
+	
+	var t=this,c,i=0,el = sb.$(el);
+	
+	this.forEach(function(n){
+		i=0;
+		el.forEach(function(elc){
+			console.log(t.length);
+			console.log(el.length);
+			if(i > 0 && t.length >= 1 && el.length > 1){
+				n = n.cloneNode(true);
+			}
+			
+			elc.parentNode.insertBefore(n, elc);
+	
+			i++;
+		});
+	});
+	
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.style(prop, val)
+@Description: Runs the style method of each node in the nodeList and sets the style prop to the val
+@Example:
+
+var nodeList = $('li,p');
+nodeList.style('backgroundColor', 'red');
+*/
+sb.nodeList.prototype.style = function(prop, val){
+
+	this.setStyle(prop, val);
+	return this;
 };
 
 /**
@@ -2416,103 +2674,6 @@ if(typeof Element === 'undefined'){
 }
 
 /**
-@Name: Element.prototype.append
-@Type: function
-@Description: Appends another DOM element to the element as a child
-@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
-@Example:
-myElement.append(myOtherElement);
-*/
-Element.prototype.append = function(el){
-	return this.appendChild(sb.$(el));
-};
-
-/**
-@Name: Element.prototype.appendTo
-@Type: function
-@Description: Appends the element to another DOM element as a child
-@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
-@Return: Element A refernce to the appended node
-@Example:
-//appends myElement to the page body
-myElement.appendTo('body');
-
-//appends myElement to a div with the ID "myDiv"
-myElement.appendTo('#myDiv');
-
-*/
-Element.prototype.appendTo = function(el){
-	return sb.$(el).appendChild(this);
-};
-
-/**
-@Name: Element.prototype.appendToTop
-@Type: function
-@Description: Appends the element to the top DOM element as a child
-@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
-@Return: Element A refernce to the appended node
-@Example:
-//appends myElement to the page body
-myElement.appendToTop('body');
-
-//appends myElement to a div with the ID "myDiv"
-myElement.appendToTop('#myDiv');
-
-*/
-Element.prototype.appendToTop = function(el){
-	el = sb.$(el);
-
-	if(el.childNodes.length ===0){
-		return this.appendTo(el);
-	} else {
-		return this.appendBefore(el.firstChild);
-	}
-};
-
-/**
-@Name: Element.prototype.appendAfter
-@Type: function
-@Description: Appends the element after another DOM element as a sibling
-@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
-@Example:
-//appends myElement to the parent of "#myDiv" as a sibling of "#myDiv" directly after "#myDiv"
-myElement.appendAfter('#myDiv');
-
-*/
-Element.prototype.appendAfter = function(after){
-	var a = sb.$(after);
-	var b = a,nxtSib = a.nextSibling || false;
-	
-	if(a.nextSibling && a.nodeType !== 3){
-		while((a = a.nextSibling) && a.nodeType === 3){
-			nxtSib = a;
-		}
-	}
-	
-	if(nxtSib){
-		return nxtSib.parentNode.insertBefore(this, nxtSib);
-	} else {
-		return this.appendTo(b.parentNode);
-	}
-
-};
-
-/**
-@Name: Element.prototype.appendBefore
-@Type: function
-@Description: Appends the element before another DOM element as a sibling
-@Param: Element, String el Another DOM element reference or a string that can be passed through sb.$ to return a DOM node.
-@Example:
-//appends myElement to the parent of "#myDiv" as a sibling of "#myDiv" directly before "#myDiv"
-myElement.appendBefore('#myDiv');
-
-*/
-Element.prototype.appendBefore = function(before){
-	before = sb.$(before);
-	return before.parentNode.insertBefore(this, before);
-};
-
-/**
 @Name: Element.prototype.getX
 @Type: function
 @Description: Calculates the absolute x position of an element
@@ -2695,7 +2856,7 @@ sb.dom.onReady({
 		}
 	}
 });
-
+/*
 if(sb.browser.agent == 'ie' && sb.browser.version >= 8){
 	sb.events.add('html', 'keydown', function(e){
 		if(e.target.nodeName === 'INPUT' && e.keyCode === 13){
@@ -2713,7 +2874,7 @@ sb.events.add(window, 'unload', function(e){
 		}
 	});
 	sb.events.removeAll();
-});
+});*/
 
 window.sb = document.sb = sb;
 if(typeof sbNo$ === 'undefined'){
