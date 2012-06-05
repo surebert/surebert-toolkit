@@ -1403,17 +1403,23 @@ sb.nodeList.prototype.appendBefore = function(el){
 };
 
 /**
-@Name: sb.nodeList.prototype.style(prop, val)
+@Name: sb.nodeList.prototype.css(prop, val)
 @Description: Runs the style method of each node in the nodeList and sets the style prop to the val
 @Example:
 
 var nodeList = $('li,p');
 nodeList.style('backgroundColor', 'red');
 */
-sb.nodeList.prototype.style = function(prop, val){
+sb.nodeList.prototype.css = function(prop, val){
+	
+	if(val !== undefined){
+		this.setStyle(prop, val);
+		return this;
+	} else {
+		console.log(val);
 
-	this.setStyle(prop, val);
-	return this;
+		return this.getStyle(prop, 1);
+	}
 };
 
 /**
@@ -1474,9 +1480,10 @@ sb.nodeList.prototype.setStyle = function(prop, val){
 var nodeList = $('li,p');
 nodeList.getStyle('backgroundColor');
 */
-sb.nodeList.prototype.getStyle = function(prop, val){
-	var vals = [];
-	this.forEach(function(el){
+sb.nodeList.prototype.getStyle = function(prop, index){
+	console.log('ff');
+	console.log(prop, index);
+	function calcStyle(el){
 		var val;
 
 		if(prop.match(/^border$/)){
@@ -1527,7 +1534,7 @@ sb.nodeList.prototype.getStyle = function(prop, val){
 					val = 'transparent';
 				}
 
-				if(typeof sb.colors.html !== 'undefined'){
+				if(typeof sb.colors.html !== undefined){
 					if(sb.colors.html[val]){
 						val = sb.colors.html[val].hex2rgb();
 					}
@@ -1538,13 +1545,17 @@ sb.nodeList.prototype.getStyle = function(prop, val){
 				}
 
 			}
-			vals.push(val);
+			return val;
 		} else {
-			vals.push(null);
+			return null;
 		}
-	});
+	}
+	if(index){
+		return calcStyle(this.get(index));
+	} else {
+		return this.map(calcStyle);
+	}
 	
-	return vals;
 	
 }
 
@@ -1567,7 +1578,7 @@ sb.nodeList.prototype.attr = function(attr, val){
 				el.setAttribute(prop, attr[prop]);
 			}
 			ret = t;
-		} else if(typeof val !== 'undefined'){
+		} else if(typeof val !== undefined){
 			if(typeof val === 'function'){
 				val = val.call(this);
 			}
@@ -1654,7 +1665,7 @@ sb.nodeList.prototype.html = function(html){
 	var ret = null
 	var t= this;
 	this.forEach(function(el){
-		if(typeof html === 'undefined'){
+		if(typeof html === undefined){
 			ret = el.innerHTML;
 		} else if(typeof html === 'function'){
 			ret = el.innerHTML = html.call(this);
@@ -1898,7 +1909,7 @@ sb.ajax.prototype = {
 		switch(this.format){
 
 			case 'head':
-				if(typeof this.header ==='undefined'){
+				if(typeof this.header === undefined ){
 					this.response = this.ajax.getAllResponseHeaders();
 				} else {
 					this.response = this.ajax.getResponseHeader(this.header);
