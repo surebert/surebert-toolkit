@@ -723,11 +723,25 @@ sb.$ = function(selector, root, asNodeList) {
 	
 	//return items that are already objects
 	if(typeof selector !== 'string'){
-		
-		return selector;
+		if(sb.typeOf(selector) == 'sb.nodeList'){
+			return selector;
+		} else if(sb.typeOf(selector) == 'sb.element'){
+			var nodeList = new sb.nodeList();
+			nodeList.push(selector);
+			return nodeList;
+		}
 	}
-
+	
 	var nodeList = new sb.nodeList();
+	
+	if(selector.match(/^</)){
+		var temp = new sb.element({
+			tag : 'div',
+			innerHTML : selector
+		});
+		nodeList.push(temp.get(0).childNodes);
+		return nodeList;
+	}
 
 	nodeList.setSelector(selector);
 
@@ -1094,7 +1108,6 @@ sb.nodeList.prototype.getElementPrototypes = function(){
 
 };
 
-	
 /**
 @Name: sb.nodeList.prototype.push
 @Param: An array of other nodes to add
@@ -1305,7 +1318,7 @@ sb.nodeList.prototype.appendToTop = function(el){
 	var t=this,c,i=0,el = sb.$(el);
 	
 	this.forEach(function(n){
-		
+		i=0;
 		el.forEach(function(elc){
 			if(i > 0){
 				n = n.cloneNode(true);
@@ -1314,7 +1327,8 @@ sb.nodeList.prototype.appendToTop = function(el){
 			if(elc.childNodes.length === 0){
 				n.appendTo(elc);
 			} else {
-				n.appendBefore(elc.firstChild);
+				
+				elc.parentNode.insertBefore(n, elc);
 			}
 			
 			i++;
@@ -1377,9 +1391,7 @@ sb.nodeList.prototype.appendAfter = function(el){
 @Example:
 //appends myElement to the parent of "#myDiv" as a sibling of "#myDiv" directly before "#myDiv"
 myElement.appendBefore('#myDiv');
-
 */
-
 sb.nodeList.prototype.appendBefore = function(el){
 	
 	var t=this,c,i=0,el = sb.$(el);
@@ -1387,8 +1399,6 @@ sb.nodeList.prototype.appendBefore = function(el){
 	this.forEach(function(n){
 		i=0;
 		el.forEach(function(elc){
-			console.log(t.length);
-			console.log(el.length);
 			if(i > 0 && t.length >= 1 && el.length > 1){
 				n = n.cloneNode(true);
 			}
@@ -1399,6 +1409,43 @@ sb.nodeList.prototype.appendBefore = function(el){
 		});
 	});
 	
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.remove
+@Type: function
+@Description: Removes an element from the DOM
+@Return: returns nodeList
+@Example:
+nodeList.remove();
+*/
+sb.nodeList.prototype.remove = function(){
+	
+	this.forEach(function(n){
+		if(n.parentNode){
+			n.parentNode.removeChild(n);
+		}
+	});
+	
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.replace
+@Type: function
+@Description: Replaces an element with another element in the DOM
+@Param: Object/String A reference to another DOM node, either as a string which is passed to the sb.$ function or as an element reference
+@Return: returns itself
+@Example:
+myElement.replace('#myOtherElement');
+*/
+Element.prototype.replace = function(node){
+	node = sb.$(node);
+	if(node.parentNode){
+		node.parentNode.replaceChild(this, node);
+	}
+	node = null;
 	return this;
 };
 
@@ -2594,17 +2641,6 @@ sb.element = function(o){
 
 	el = document.createElement(o.tag);
 
-	//copy properties from the sb.element prototype
-	if(Element.emulated){
-		sb.objects.infuse(Element.prototype, el);
-		o = sb.objects.copy(o);
-	}
-
-	if(typeof o.styles !== 'undefined'){
-		el.styles(o.styles);
-		delete o.styles;
-	}
-
 	if(typeof o.children !== 'undefined'){
 		var len = o.children.length;
 		for(c=0;c<len;c++){
@@ -2623,17 +2659,32 @@ sb.element = function(o){
 
 		delete o.events;
 	}
-
+	
+	var nl = new sb.nodeList();
+	
+	nl.push(el);
+	
+	if(typeof o.styles !== 'undefined'){
+		nl.styles(o.styles);
+		delete o.styles;
+	}
+	
+	if(typeof o.innerHTML !== 'undefined'){
+		nl.html(o.innerHTML);
+		delete o.innerHTML;
+	}
+	
+	if(typeof o.html !== 'undefined'){
+		nl.html(o.html);
+		delete o.html;
+	}
+	
+	delete o.tag;
+	
 	//copy additional props from o
 	sb.objects.infuse(o, el);
 
-	if(sb.browser.agent === 'ie'){
-		
-		//remove attributes for ie's sake
-		el.removeAttribute('tag');
-	}
-
-	return el;
+	return nl;
 };
 
 /**
@@ -2671,8 +2722,10 @@ sb.el = function(str){
 			el.setAttribute(a[0], a[1]);
 		});
 	}
-
-	return el;
+	
+	var nl = new sb.nodeList();
+	nl.push(el);
+	return nl;
 };
 
 /**
@@ -2719,38 +2772,6 @@ Element.prototype.getY = function(){
 	return y;
 };
 
-/**
-@Name: Element.prototype.remove
-@Type: function
-@Description: Removes an element from the DOM
-@Return: returns itself
-@Example:
-myElement.remove();
-*/
-Element.prototype.remove = function(){
-	if(this.parentNode){
-		this.parentNode.removeChild(this);
-	}
-	return this;
-};
-
-/**
-@Name: Element.prototype.replace
-@Type: function
-@Description: Replaces an element with another element in the DOM
-@Param: Object/String A reference to another DOM node, either as a string which is passed to the sb.$ function or as an element reference
-@Return: returns itself
-@Example:
-myElement.replace('#myOtherElement');
-*/
-Element.prototype.replace = function(node){
-	node = sb.$(node);
-	if(node.parentNode){
-		node.parentNode.replaceChild(this, node);
-	}
-	node = null;
-	return this;
-};
 
 /**
 @Name: Element.prototype.evt
