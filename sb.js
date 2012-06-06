@@ -1050,6 +1050,9 @@ sb.nodeList = function(params){
 
 };
 
+
+sb.nodeList.prototype = new Array();
+
 /**
 @Name: sb.nodeList.prototype.$
 @Description: returns matching elements within the element
@@ -1057,11 +1060,9 @@ sb.nodeList = function(params){
 var myDiv = $('#mdiv');
 myDiv.$('.someClass');
 */
-sb.nodeList.$ = function(selector){
+sb.nodeList.prototype.$ = function(selector){
 	return sb.$(selector, this[0]);
 };
-
-sb.nodeList.prototype = new Array();
 
 sb.nodeList.copyFunc = function(prop, node){
 	return function(){
@@ -1450,6 +1451,68 @@ Element.prototype.replace = function(node){
 };
 
 /**
+@Name: sb.nodeList.prototype.parents
+@Description: returns a new nodeList of the full parents for each of the nodes
+@Example:
+
+var nl = $('.someClass');
+nl.parents();
+*/
+sb.nodeList.prototype.parents = function(until){
+	var nl = new sb.nodeList();
+	this.forEach(function(el){
+		
+		while(el = el.parentNode){
+			
+			if(el.nodeType === 1){
+				nl.push(el);
+			
+				if(typeof until == 'string'){
+					if(
+					(until.toUpperCase() == el.nodeName)
+					|| (until[0] == '#' && '#'+el.id == until)
+					|| (until[0] == '.' && el.className.match("\\b"+until.replace(/\./, '')+"\\b"))
+					){
+						break;
+					}
+				} else if(sb.typeOf(until) == 'sb.nodeList'){
+					if(until.get(0) == el){
+						break;
+					}
+				}
+			}
+			
+		}
+		
+	});
+	
+	return nl;
+};
+
+/**
+@Name: sb.nodeList.prototype.parent
+@Description: returns a new nodeList of the closest parent for each of the nodes
+@Example:
+
+var nl = $('.someClass');
+nl.parent();
+*/
+sb.nodeList.prototype.parent = function(){
+	var nl = new sb.nodeList();
+	this.forEach(function(el){
+		var p=null;
+		if(el.parentNode && el.parentNode.nodeType === 1){
+			p = el.parentNode;
+		}
+		nl.push(p);
+	});
+	
+	return nl;
+};
+
+
+
+/**
 @Name: sb.nodeList.prototype.css(prop, val)
 @Description: Runs the style method of each node in the nodeList and sets the style prop to the val
 @Example:
@@ -1463,8 +1526,6 @@ sb.nodeList.prototype.css = function(prop, val){
 		this.setStyle(prop, val);
 		return this;
 	} else {
-		console.log(val);
-
 		return this.getStyle(prop, 1);
 	}
 };
