@@ -5,7 +5,7 @@ var nodes = $('img');
 nodes.hide()
 */
 sb.nodeList.prototype.hide = function(){
-	this.nodes.forEach(function(v){
+	this.forEach(function(v){
 		return v.style.display = 'none';
 	});
 

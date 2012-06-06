@@ -5,7 +5,7 @@ var nodes = $('img');
 nodes.show()
 */
 sb.nodeList.prototype.show = function(){
-	this.nodes.forEach(function(v){
+	this.forEach(function(v){
 		return v.style.display = '';
 	});
 

@@ -18,40 +18,41 @@ $('li').stylesTrail({
 
 sb.nodeList.prototype.stylesTrail = function(params){
   
-	styles = params.styles || {backgroundColor : 'orange'};
-	offset = params.offset || 300;
-	offsetOff = params.offsetOff || 80;
+	var prop,styles = params.styles || {backgroundColor : 'orange'};
+	var offset = params.offset || 300;
+	var offsetOff = params.offsetOff || 80;
 	
 	var i = 0; 
 	var count = this.length;
 	var j = 0;
-	var self = this;
+	var t = this;
 	
-	this.forEach(function(node){
-		node._origStyles = {};
+	
+	this.forEach(function(el){
+		el._origStyles = {};
 		for(prop in styles){
 			if(styles.hasOwnProperty(prop)){
-				node._origStyles[prop] = node.getStyle(prop);
+				el._origStyles[prop] = t.getStyle.call([el], prop);
 			}
 		}
 		
 		window.setTimeout(function(){
 			for(prop in styles){
 				if(styles.hasOwnProperty(prop)){
-					node.setStyle(prop, styles[prop]);
+					t.setStyle.call([el], prop, styles[prop]);
 				}
 			}
 			window.setTimeout(function(){
-				for(prop in node._origStyles){
+				for(prop in el._origStyles){
 					if(styles.hasOwnProperty(prop)){
-						node.setStyle(prop, node._origStyles[prop]);
+						t.setStyle.call([el], prop, el._origStyles[prop]);
 					}
 				}
 				
 				j++;
 				
 				if(j == count && typeof params.onEnd == 'function'){
-					params.onEnd(self);
+					params.onEnd(t);
 				}
 			}, i+offset);
 		}, i);
