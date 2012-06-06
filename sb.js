@@ -3394,24 +3394,7 @@ Element.prototype.eventsRemoveAll = function(){
 Element.prototype.typeOf = function(){
 	return 'sb.element';
 };
-/*
-sb.dom.onReady({
-	id : 'body',
-	onReady : function(){
-		sb.onbodyload.forEach(function(v){
-			if(typeof v === 'function'){
-				v();
-			}
-		});
-	},
-	tries : 600,
-	ontimeout : function(){
-		if(typeof sb.onbodynotready === 'function'){
-			sb.onbodynotready();
-		}
-	}
-});
-*/
+
 /*
 if(sb.browser.agent == 'ie' && sb.browser.version >= 8){
 	sb.events.add('html', 'keydown', function(e){
