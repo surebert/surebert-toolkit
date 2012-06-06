@@ -1534,11 +1534,16 @@ sb.nodeList = function(params){
 
 };
 
-['some', 'map', 'filter', 'forEach', 'length', 'slice', 'indexOf'].forEach(function(f){
-	sb.nodeList.prototype[f] = Array.prototype[f];
-});
+sb.nodeList.prototype.some = Array.prototype.some;
+sb.nodeList.prototype.every = Array.prototype.every;
+sb.nodeList.prototype.map = Array.prototype.map;
+sb.nodeList.prototype.filter = Array.prototype.filter;
+sb.nodeList.prototype.forEach = Array.prototype.forEach;
+sb.nodeList.prototype.slice = Array.prototype.slice;
+sb.nodeList.prototype.indexOf = Array.prototype.indexOf;
 
 sb.nodeList.prototype.length = 0;
+
 /**
 @Name: sb.nodeList.prototype.$
 @Description: returns matching elements within the element
@@ -1567,7 +1572,8 @@ sb.nodeList.prototype.selector = '';
 @Description: Empties the nodes array
 */
 sb.nodeList.prototype.empty = function(){
-	return new sb.nodeList();
+	this.length = 0;
+	return this;
 };
 
 
