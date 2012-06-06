@@ -763,15 +763,6 @@ sb.$ = function(selector, root, asNodeList) {
 
 };
 
-sb.$.copyElementPrototypes = function(node){
-	var ep = Element.prototype,prop;
-	for(prop in ep){
-		if(ep.hasOwnProperty(prop)){
-			node[prop] = ep[prop];
-		}
-	}
-};
-
 /**
 @Name: sb.nodeList.parseInheritors
 @Param: inheritor
@@ -1627,13 +1618,90 @@ sb.nodeList.prototype.drop = function(el){
 	var nl = new sb.nodeList();
 	
 	nl.push(t.filter(function(v){
-		if(sb.typeOf(el) === 'sb.element'){
-			return v !== el;
-		}
-
+		return v !== el;
 	}));
 	return nl;
 };
+
+
+/**
+@Name: sb.nodeList.prototype.evt
+@Type: function
+@Description: Used to set event cross-browser event handlers.  For more information see sb.events.
+@Param: String evt The event to handle e.g. mouseover, mouseout, mousedown, mouseup, click, dblclick, focus, blurr, scroll, contextmenu, keydown, keyup, keypress
+@Param: Function func The function to use as an event handler.  It is passed the e from the event in every brower as the first argument.  It also references "this" as the object the event is listening on.
+@Return: The event that is added is returned so that you can use the reference to remove it with sb.events.remove or the sb.element instances sb.eventRemove
+@Example:
+
+//sets the backgroundColor peroperty to red
+myElement.evt('click', function(e){
+	//alerts the x value of the click
+	alert(e.clientX);
+	//alerts the innerHTML of myElement
+	alert(this.innerHTML);
+});
+
+*/
+sb.nodeList.prototype.evt = function (evt, func){
+	
+	var events = this.map(function(el){
+		var event = sb.events.add(el, evt, func);
+		el.eventsAdded.push(event);
+		return event;
+	});
+	
+	return this.length === 1 ? events[0] : events;
+
+};
+
+/**
+@Name: sb.nodeList.prototype.events
+@Type: function
+@Description: Used to assign multiple events at once
+@Param: object events
+@Example:
+var myDiv = $('#myDiv');
+myDiv.events({
+	click : function(){
+		do something
+	},
+	mouseover : function(){
+		//do somthing
+	}
+});
+*/
+sb.nodeList.prototype.events = function(events){
+	var event;
+	for(event in events){
+		if(typeof events[event] === 'function'){
+			this.evt(event, events[event]);
+		}
+	}
+
+	return this;
+};
+
+/**
+@Name: sb.nodeList.prototype.eventsRemoveAll
+@Type: function
+@Description: Removes all event observers for the sb.element that were added using this.evt() or this.events()
+@Example:
+myElement.eventsRemoveAll();
+*/
+sb.nodeList.prototype.eventsRemoveAll = function(){
+	this.forEach(function(el){
+		if(el.eventsAdded){
+			el.eventsAdded.forEach(function(evt){
+				sb.events.remove(evt);
+			});
+		}
+		
+		el.eventsAdded = [];
+		
+	});
+	return this;
+};
+
 
 /**
 @Name: sb.nodeList.prototype.setSelector
@@ -1687,6 +1755,41 @@ sb.nodeList.prototype.size = function(){
 */
 sb.nodeList.prototype.get = function(i){
 	return i !== 'undefined' ? this.toArray()[i] : this.toArray();
+};
+
+/**
+@Name: sb.nodeList.prototype.getX
+@Type: function
+@Description: Calculates the absolute y position of the element item in the nodeList
+@Return: Integer the x position of an element
+@Example:
+myElement.getX();
+*/
+sb.nodeList.prototype.getX = function(){
+	var x = 0, el=this[0];
+	while(el !== null){
+		x += el.offsetLeft;
+		el = el.offsetParent;
+	}
+	return x;
+};
+
+/**
+@Name: sb.nodeList.prototype.getY
+@Type: function
+@Description: Calculates the absolute x position of the element item in the nodeList
+@Return: Integer the y position of the element
+
+@Example:
+myElement.getY();
+*/
+sb.nodeList.prototype.getY = function(){
+	var y = 0, el=this[0];
+	while(el !== null){
+		y += el.offsetTop;
+		el = el.offsetParent;
+	}
+	return y;
 };
 
 /**
@@ -2948,8 +3051,12 @@ sb.events = {
 		
 		if ( window.attachEvent){
 			return function(el, type, fn) {
-				el = sb.$(el);
-				
+				if(!el.nodeType){
+					el = sb.$(el).get(0);
+				}
+				if(typeof el.eventsAdded == 'undefined'){
+					el.eventsAdded=[];
+				}
 				var f = function() {
 					var e = window.event,tar = null,d= document.documentElement,b=document.body;
 					if(e){
@@ -3005,7 +3112,12 @@ sb.events = {
 		} else if(window.addEventListener){
 
 			return function(el, type, fn) {
-				el = sb.$(el);
+				if(!el.nodeType){
+					el = sb.$(el).get(0);
+				}
+				if(typeof el.eventsAdded == 'undefined'){
+					el.eventsAdded=[];
+				}
 				var f = function(e){
 
 					var sb_target = e.target;
@@ -3147,10 +3259,6 @@ myDiv.appendChild(myOtherDiv);
 sb.element = function(o){
 	var el,c;
 
-	if(sb.typeOf(o) === 'sb.element'){
-		return o;
-	}
-
 	el = document.createElement(o.tag);
 
 	if(typeof o.children !== 'undefined'){
@@ -3238,143 +3346,6 @@ sb.el = function(str){
 	var nl = new sb.nodeList();
 	nl.push(el);
 	return nl;
-};
-
-//TODO remove
-Element = {prototype : {}};
-/**
-@Name: Element.prototype.getX
-@Type: function
-@Description: Calculates the absolute x position of an element
-@Return: Integer the x position of an element
-@Example:
-myElement.getX();
-*/
-Element.prototype.getX = function(){
-	var x = 0, el=this;
-	while(el !== null){
-		x += el.offsetLeft;
-		el = el.offsetParent;
-	}
-	return x;
-};
-
-/**
-@Name: Element.prototype.getY
-@Type: function
-@Description: Calculates the absolute x position of an element
-@Return: Integer the y position of an element
-
-@Example:
-myElement.getY();
-*/
-Element.prototype.getY = function(){
-	var y = 0, el=this;
-	while(el !== null){
-		y += el.offsetTop;
-		el = el.offsetParent;
-	}
-	return y;
-};
-
-
-/**
-@Name: Element.prototype.evt
-@Type: function
-@Description: Used to set event cross-browser event handlers.  For more information see sb.events.
-@Param: String evt The event to handle e.g. mouseover, mouseout, mousedown, mouseup, click, dblclick, focus, blurr, scroll, contextmenu, keydown, keyup, keypress
-@Param: Function func The function to use as an event handler.  It is passed the e from the event in every brower as the first argument.  It also references "this" as the object the event is listening on.
-@Return: The event that is added is returned so that you can use the reference to remove it with sb.events.remove or the sb.element instances sb.eventRemove
-@Example:
-
-//sets the backgroundColor peroperty to red
-myElement.evt('click', function(e){
-	//alerts the x value of the click
-	alert(e.clientX);
-	//alerts the innerHTML of myElement
-	alert(this.innerHTML);
-});
-
-*/
-Element.prototype.evt = function (evt, func){
-
-	var event = sb.events.add(this, evt, func);
-
-	this.eventsAdded.push(event);
-	return event;
-
-};
-
-/**
-@Name: Element.prototype.eventsAdded
-@Type: array
-@Description: Used keep track of events added to a sb.element.  All events added with this.event are pushed into this array where they are stored for removal
-
-*/
-Element.prototype.eventsAdded = [];
-
-/**
-@Name: Element.prototype.events
-@Type: function
-@Description: Used to assign multiple events at once
-@Param: object events
-@Example:
-var myDiv = $('#myDiv');
-myDiv.events({
-	click : function(){
-		do something
-	},
-	mouseover : function(){
-		//do somthing
-	}
-});
-*/
-Element.prototype.events = function(events){
-	var event;
-	for(event in events){
-		if(typeof events[event] === 'function'){
-			this.evt(event, events[event]);
-		}
-	}
-
-	return this;
-};
-
-/**
-@Name: Element.prototype.eventRemove
-@Type: function
-@Description: Removes an event created with Element.prototype.event
-@Param: String evt An event reference returned from the sb.element instances event method above.
-@Example:
-//sets the backgroundColor property to red
-var myEvt = myElement.evt('click', function(e){
-	alert(this.innerHTML);
-});
-
-myElement.eventRemove(myEvt);
-*/
-Element.prototype.eventRemove = function (evt){
-	sb.events.remove(evt);
-	return this;
-};
-
-/**
-@Name: Element.prototype.eventsRemoveAll
-@Type: function
-@Description: Removes all event observers for the sb.element that were added using this.evt() or this.events()
-@Example:
-myElement.eventsRemoveAll();
-*/
-Element.prototype.eventsRemoveAll = function(){
-	this.eventsAdded.forEach(function(evt){
-		sb.events.remove(evt);
-	});
-	this.eventsAdded = [];
-	return this;
-};
-
-Element.prototype.typeOf = function(){
-	return 'sb.element';
 };
 
 /*
