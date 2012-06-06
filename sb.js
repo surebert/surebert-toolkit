@@ -714,7 +714,7 @@ e.g  '*:not(p)' LIMITED SUPPORT - returns all nodes that are not p tags
 
 
 sb.$ = function(selector, root, asNodeList) {
-
+	
 	root = root || document;
 
 	if(selector === ''){
@@ -725,7 +725,7 @@ sb.$ = function(selector, root, asNodeList) {
 	if(typeof selector !== 'string'){
 		if(sb.typeOf(selector) == 'sb.nodeList'){
 			return selector;
-		} else if(sb.typeOf(selector) == 'sb.element'){
+		} else if(selector.nodeType){
 			var nodeList = new sb.nodeList();
 			nodeList.push(selector);
 			return nodeList;
@@ -747,6 +747,8 @@ sb.$ = function(selector, root, asNodeList) {
 
 	if(root.querySelectorAll){
 		nodeList.push(root.querySelectorAll(selector));
+	} else {
+		sb.$.parseSelectors(nodeList, root);
 	}
 
 	if(asNodeList){
@@ -759,6 +761,488 @@ sb.$ = function(selector, root, asNodeList) {
 		return nodeList;
 	}
 
+};
+
+sb.$.copyElementPrototypes = function(node){
+	var ep = Element.prototype,prop;
+	for(prop in ep){
+		if(ep.hasOwnProperty(prop)){
+			node[prop] = ep[prop];
+		}
+	}
+};
+
+/**
+@Name: sb.nodeList.parseInheritors
+@Param: inheritor
+@Param: within
+@Description: Used Internally
+*/
+sb.$.parseSelectors = function(nodes, within){
+
+	within = within || document;
+	var root = [within], s=0, selectors = nodes.selector.split(",");
+
+	var len = selectors.length;
+	
+	for(s=0;s<len;s++){
+	
+		root = [within];
+
+		selectors[s].split(" ").forEach(function(selector,k,a){
+
+			if(selector.indexOf(">")+1){
+
+				root = sb.$.getElementsByParent(selector);
+
+				if(k+1 === a.length){
+					nodes.push(root);
+
+				}
+
+				return true;
+
+			} else if(selector.indexOf('[')+1){
+
+				///look for attribute's by searching for sqaure brackets //
+				root = sb.$.getElementsByAttributes(root, selector);
+
+				if(k+1 === a.length){
+					nodes.push(root);
+				}
+
+				return true;
+			} else if(selector.indexOf("~")+1){
+
+				root = sb.$.getElementsBySiblingCombinator(root, selector);
+
+				if(k+1 === a.length){
+					nodes.push(root);
+
+				}
+
+				return true;
+
+			} else if(selector.indexOf("+")+1){
+
+				root = sb.$.getElementsByAdjacentSibling(root, selector);
+
+				if(k+1 === a.length){
+					nodes.push(root);
+
+				}
+
+				return true;
+
+			} else if(selector.indexOf(":")+1){
+				//look for pseudo selectors
+				root = sb.$.parsePseudoSelectors(root, selector);
+
+				if(k+1 === a.length){
+					nodes.push(root);
+				}
+
+				return true;
+
+			} else if((selector.indexOf("#") === 0 && selector.match(/^\#[\w\-]+$/)) || selector.match(/\w+\#[\w\-]+/)) {
+
+				var element = sb.$.getElementById(selector);
+
+				if(element){
+					root = (element instanceof Array) ? element : [element];
+
+					if(k+1 === a.length){
+						nodes.push(root);
+
+					}
+				}
+
+				return true;
+
+			} else if (selector.indexOf(".") !== false){
+
+				var period_pos = selector.indexOf(".");
+
+				var left_bracket_pos = selector.indexOf("[");
+				var right_bracket_pos = selector.indexOf("]");
+
+				if(period_pos+1 && !(period_pos > left_bracket_pos && period_pos < right_bracket_pos)) {
+
+					root = sb.$.getElementsByClassName(selector, root[0]);
+
+					if(k+1 === a.length){
+						nodes.push(root);
+					}
+
+					return true;
+				}
+			}
+			
+			//Tag selectors - no class or id specified.
+			root = sb.$.getElementsByTagName(root, selector);
+
+			if(k+1 === a.length){
+				nodes.push(root);
+			}
+
+			return true;
+		});
+
+	}
+
+	return nodes;
+};
+
+/**
+@Name: sb.$.getElementById
+@Description: Used Internally
+*/
+sb.$.getElementById = function(selector){
+
+	var parts = selector.split("#");
+	var element = document.getElementById(parts[1]);
+	return element;
+};
+
+/**
+@Name: sb.$.getElementsByClassName
+@Param: string Selector The selector e.g. .myclass or div.myclass
+@Param: element The root to search within e.g. document, div
+@Description: Used Internally
+*/
+sb.$.getElementsByClassName = function(selector, root){
+	
+	var nodes,elements = [],x=0;
+	
+	if(root.getElementsByClassName && selector.charAt(0) === '.'){
+		
+		nodes = root.getElementsByClassName(selector.replace(/\./, ''));
+		
+		for(x=0;x<nodes.length;x++){
+			elements.push(nodes[x]);
+		}
+		return elements;
+	}
+
+	var parts = selector.split('.');
+	nodes = root.getElementsByTagName(parts[0] || '*');
+	var className = parts[1], node, cur_class_name,len = nodes.length;
+	x=0;
+	var rg = RegExp("\\b"+className+"\\b");
+	
+	if(nodes.length > 0){
+		do{
+			node = nodes[x];
+			cur_class_name = node.className;
+			if (cur_class_name.length && (cur_class_name === className || rg.test(cur_class_name))){
+
+				elements.push(node);
+			}
+			x++;
+
+
+		} while(x<len);
+	}
+	return elements;
+};
+
+/**
+@Name: sb.$.getElementsByTagName
+@Description: Used Internally
+*/
+sb.$.getElementsByTagName = function(root, tag) {
+	root = (root instanceof Array) ? root : [root];
+
+	var matches = [],len1 = root.length,len2,x=0,i=0,nodes,elements;
+
+	for(x=0;x<len1;x++){
+
+		nodes = root[x].getElementsByTagName(tag || '*');
+		elements = [];
+		len2 = nodes.length;
+
+		for(i=0;i<len2;i++){
+			elements.push(nodes[i]);
+		}
+		matches = matches.concat(elements);
+	}
+
+	return matches;
+};
+
+/**
+@Name: sb.$.getElementsByAttributes
+@Description: Used Internally
+*/
+sb.$.getElementsByAttributes = function(within, selector){
+	var tag,attr,operator,value;
+
+	if (selector.match(/^(?:(\w*|\*))\[(\w+)([=~\|\^\$\*]?)=?['"]?([^\]'"]*)['"]?\]$/)) {
+		tag = RegExp.$1;
+		attr = (typeof sb.nodeList.attrConvert === 'function') ? sb.nodeList.attrConvert(RegExp.$2) : RegExp.$2;
+
+		operator = RegExp.$3;
+		value = RegExp.$4 ||'';
+	}
+
+	var elements = sb.$.getElementsByTagName(within, tag);
+
+	within = elements.filter(function(el,k,a){
+
+		el.attrVal = el.getAttribute(attr, 2);
+
+		//if attribute is null
+		if(!el.attrVal){
+			return false;
+		}
+
+		switch(operator){
+			case '=':
+				if(el.attrVal !== value){
+					return false;
+				}
+				break;
+
+			case '~':
+
+				if(!el.attrVal.match(new RegExp('(^|\\s)'+value+'(\\s|$)'))){
+					return false;
+				}
+				break;
+
+			case '|':
+
+				if(!el.attrVal.match(new RegExp(value+'-'))) {
+					return false;
+				}
+				break;
+
+			case '^':
+				if(el.attrVal.indexOf(value) !== 0){
+					return false;
+				}
+				break;
+
+			case '$':
+				if(el.attrVal.lastIndexOf(value)!==(el.attrVal.length-value.length)){
+					return false;
+				}
+				break;
+
+			case '*':
+				if(el.attrVal.indexOf(value)+1 === 0){
+					return false;
+				}
+				break;
+
+			default:
+				if(!el.getAttribute(attr)){
+					return false;
+				}
+		}
+
+		return true;
+
+	});
+
+	return within;
+
+};
+
+/**
+@Name: sb.$.getNextSibling
+@Description: Used Internally
+*/
+sb.$.getNextSibling = function(node){
+	while((node = node.nextSibling) && node.nodeType === 3){}
+	return node;
+};
+
+/**
+@Name: sb.$.getPreviousSibling
+@Description: Used Internally
+*/
+sb.$.getPreviousSibling = function(node){
+	while((node = node.previousSibling) && node.nodeType === 3){}
+	return node;
+};
+
+/**
+@Name: sb.$.getFirstChild
+@Description: Used Internally
+*/
+sb.$.getFirstChild = function(node){
+	node = node.firstChild;
+	while (node && node.nodeType && node.nodeType === 3) {
+		node = sb.$.getNextSibling(node);
+	}
+	return node;
+};
+
+/**
+@Name: sb.$.getLastChild
+@Description: Used Internally
+*/
+sb.$.getLastChild = function(node){
+
+	node = node.lastChild;
+	while (node && node.nodeType && node.nodeType === 3) {
+		node = sb.$.getPreviousSibling(node);
+	}
+	return node;
+};
+
+/**
+@Name: sb.$.getElementsByParent
+@Description: Used Internally
+*/
+sb.$.getElementsByParent = function(selector){
+	var parents ,n=0, tags = selector.split(">");
+
+	var elements = sb.$.getElementsByTagName([document.body], tags[1]);
+
+	var nodes = [];
+	var len = elements.length;
+
+	var rg = new RegExp(tags[0], 'i');
+
+	if(tags[0].match(/\./)){
+		parents = sb.$(tags[0]);
+	}
+	for(n;n<len;n++){
+		if(rg.test(elements[n].parentNode.nodeName) || (parents && parents.nodes.inArray(elements[n].parentNode))){
+			elements[n].sbid = sb.uniqueID();
+			nodes.push(elements[n]);
+		}
+	}
+
+	return nodes;
+
+};
+
+/**
+@Name: sb.$.getElementsBySiblingCombinator
+@Description: Used Internally
+*/
+sb.$.getElementsBySiblingCombinator = function(within, selector){
+	var parts = selector.split("~");
+
+	var nodeName = parts[0],siblingNodeName = parts[1],elements = [],x=0,nn;
+
+	var siblings = sb.$.getElementsByTagName(within, nodeName);
+	var len = siblings.length;
+
+	for(x=0;x<len;x++){
+		var node = siblings[x];
+
+		while((node = node.nextSibling)){
+			nn = node.nodeName.toLowerCase();
+			if(nn === nodeName){
+				break;
+			}
+			if(node.nodeType === 1 && nn === siblingNodeName){
+				node.sbid = sb.uniqueID();
+				elements.push(node);
+			}
+		}
+	}
+	return elements;
+
+};
+
+/**
+@Name: sb.$.getElementsByAdjacentSibling
+@Description: Used Internally
+*/
+sb.$.getElementsByAdjacentSibling = function(within, selector){
+	var parts = selector.split("+");
+
+	var nodeName =parts[0];
+	var adjacentNodeName = parts[1].toUpperCase();
+	var elements = sb.$.getElementsByTagName([document.body], nodeName);
+	elements = (!elements.length) ? [elements] : elements;
+	//put in the proper adajcent siblings
+	var nodes = [], x=0,node,len = elements.length;
+	for(x=0;x<len;x++){
+		node = sb.$.getNextSibling(elements[x]);
+		if(node && node.nodeName === adjacentNodeName){
+			nodes.push(node);
+		}
+	}
+
+	return nodes;
+
+};
+
+/**
+@Name: sb.$.parsePseudoSelectors
+@Description: Used Internally
+*/
+sb.$.parsePseudoSelectors = function(within, selector){
+
+	var notSelector,elements = [],parts = selector.split(":");
+
+	selector =parts[0];
+	var pseudo = parts[1];
+
+	var nodes = sb.$.getElementsByTagName(within, selector);
+
+	nodes.forEach(function(node,k,a){
+
+		switch(pseudo){
+
+			case 'before':
+
+				var bf = new sb.element({
+					nodeName : 'span',
+					innerHTML : 'ddd'
+				}).appendToTop(node);
+				elements.push(bf);
+
+				break;
+
+			case 'first-child':
+
+				if(!sb.$.getPreviousSibling(node)){
+					elements.push(node);
+				}
+				break;
+
+			case 'last-child':
+				if(!sb.$.getNextSibling(node)){
+					elements.push(node);
+				}
+				break;
+
+			case 'empty':
+				if(node.innerHTML ===''){
+					elements.push(node);
+				}
+				break;
+
+			case 'only-child':
+
+				if(!sb.$.getPreviousSibling(node) && !sb.$.getNextSibling(node)){
+					elements.push(node);
+				}
+
+				break;
+
+			default:
+
+				if(pseudo.indexOf('not')+1){
+					notSelector = pseudo.match(/not\((.*?)\)/);
+
+					if(node.nodeName.toLowerCase() !== notSelector[1]){
+						elements.push(node);
+					}
+				}
+		}
+
+
+	});
+
+	return elements;
 };
 
 /**
@@ -1050,9 +1534,11 @@ sb.nodeList = function(params){
 
 };
 
+['some', 'map', 'filter', 'forEach', 'length', 'slice', 'indexOf'].forEach(function(f){
+	sb.nodeList.prototype[f] = Array.prototype[f];
+});
 
-sb.nodeList.prototype = new Array();
-
+sb.nodeList.prototype.length = 0;
 /**
 @Name: sb.nodeList.prototype.$
 @Description: returns matching elements within the element
@@ -1063,14 +1549,6 @@ myDiv.$('.someClass');
 sb.nodeList.prototype.$ = function(selector){
 	return sb.$(selector, this[0]);
 };
-
-sb.nodeList.copyFunc = function(prop, node){
-	return function(){
-		
-		return Element.prototype[prop].apply(node, sb.toArray(arguments));
-	};
-};
-
 
 /**
 @Name: sb.nodeList.prototype.length
@@ -1132,9 +1610,6 @@ sb.nodeList.prototype.push = function(nodes){
 
 	var prop,x=0,node;
 
-	var emulated = Element.emulated;
-	var ep = Element.prototype;
-
 	for(x=0;x<len;x++){
 		node=nodes[x];
 		var sb_id = node.getAttribute('sb_id');
@@ -1145,12 +1620,6 @@ sb.nodeList.prototype.push = function(nodes){
 
 		if(!this.sb_ids[sb_id]){
 
-			if(!node.xml && emulated){
-				for(prop in ep){
-					node[prop] = ep[prop];
-				}
-			}
-			
 			Array.prototype.push.call(this, node);
 			
 			this.sb_ids[sb_id] = true;
@@ -1440,8 +1909,9 @@ sb.nodeList.prototype.remove = function(){
 @Return: returns itself
 @Example:
 myElement.replace('#myOtherElement');
+@TODO test and rewrite
 */
-Element.prototype.replace = function(node){
+sb.nodeList.prototype.replace = function(node){
 	node = sb.$(node);
 	if(node.parentNode){
 		node.parentNode.replaceChild(this, node);
@@ -1589,8 +2059,7 @@ var nodeList = $('li,p');
 nodeList.getStyle('backgroundColor');
 */
 sb.nodeList.prototype.getStyle = function(prop, index){
-	console.log('ff');
-	console.log(prop, index);
+	
 	function calcStyle(el){
 		var val;
 
@@ -1773,7 +2242,7 @@ sb.nodeList.prototype.html = function(html){
 	var ret = null
 	var t= this;
 	this.forEach(function(el){
-		if(typeof html === undefined){
+		if(typeof html === 'undefined'){
 			ret = el.innerHTML;
 		} else if(typeof html === 'function'){
 			ret = el.innerHTML = html.call(this);
@@ -2660,7 +3129,7 @@ sb.events = {
 @Name: sb.element
 @Type: constructor
 @Description: Used to create DOM nodes.
-@Param: Object o An object of properties which are used to contruct the DOM object,  all properites are appending as properties to the dom object.  sb.elements have many methods whcih are all listed in the Element.prototype object below
+@Param: Object o An object of properties which are used to contruct the DOM object,  all properites are appending as properties to the dom object.
 @Param: String o If passed a nodeName as a string it simply returns document.createElement(nodeName);
 @Param: Object sb.element If passed an sb.element it uses that element as a template and clones it
 @Return: Element A DOM element hat can be inserted into the DOM or further manipulated
@@ -2753,7 +3222,7 @@ sb.element = function(o){
 @Type: constructor
 @Description: Used to create DOM nodes.
 @Param: String str The string used to desribe the object format TAG#id.class names@attr=val&vattr=val (or [attr=val][attr=val])
-@Return: sb.element object with all Element.prototype properties
+@Return: sb.nodeList with element in array
 @Example:
 var div = new sb.el('div#mydiv.chat[dog=one][cat=rob]').appendToTop('body');
 OR
@@ -2789,15 +3258,8 @@ sb.el = function(str){
 	return nl;
 };
 
-/**
- * Create Element for IE and browsers that don't have it, notify that we are emulating so that we can copy properties as required
- */
-if(typeof Element === 'undefined'){
-	Element = function(){};
-	Element.emulated = true;
-	Element.prototype = {};
-}
-
+//TODO remove
+Element = {prototype : {}};
 /**
 @Name: Element.prototype.getX
 @Type: function
@@ -2932,7 +3394,7 @@ Element.prototype.eventsRemoveAll = function(){
 Element.prototype.typeOf = function(){
 	return 'sb.element';
 };
-
+/*
 sb.dom.onReady({
 	id : 'body',
 	onReady : function(){
@@ -2949,6 +3411,7 @@ sb.dom.onReady({
 		}
 	}
 });
+*/
 /*
 if(sb.browser.agent == 'ie' && sb.browser.version >= 8){
 	sb.events.add('html', 'keydown', function(e){
