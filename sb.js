@@ -1541,7 +1541,6 @@ sb.nodeList.prototype.filter = Array.prototype.filter;
 sb.nodeList.prototype.forEach = Array.prototype.forEach;
 sb.nodeList.prototype.slice = Array.prototype.slice;
 sb.nodeList.prototype.indexOf = Array.prototype.indexOf;
-
 sb.nodeList.prototype.length = 0;
 
 /**
@@ -1556,12 +1555,6 @@ sb.nodeList.prototype.$ = function(selector){
 };
 
 /**
-@Name: sb.nodeList.prototype.length
-@Description: The default length
-*/
-sb.nodeList.prototype.length = 0;
-
-/**
 @Name: sb.nodeList.prototype.selector
 @Description: The CSS selector used to find the nodes
 */
@@ -1574,23 +1567,6 @@ sb.nodeList.prototype.selector = '';
 sb.nodeList.prototype.empty = function(){
 	this.length = 0;
 	return this;
-};
-
-
-/**
-@Name: sb.nodeList.prototype.getElementPrototypes
-@Description: Re-assigns Element.prototypes of the nodes in the .nodes array to make sure that it picks up any Element.prototypes that have been added after the $ selection was made.  This is only required in IE since the other browsers all respect actual Element.protoype
-*/
-sb.nodeList.prototype.getElementPrototypes = function(){
-
-	var x,prop,ep = Element.prototype,len = this.length;
-
-	for(x=0;x<len;x++){
-		for(prop in ep){
-			this[x][prop] = ep[prop];
-		}
-	}
-
 };
 
 /**
