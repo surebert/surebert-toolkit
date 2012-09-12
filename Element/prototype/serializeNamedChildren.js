@@ -23,7 +23,12 @@ Element.prototype.serializeNamedChildren = function(o) {
     var dat=[],s,enc=encodeURIComponent;
 
     this.$('*[name]').forEach(function(v,k,a){
-        var n=v.getAttribute('name'),t=v.type,val=v.value||v.getAttribute('value')||'',enc=encodeURIComponent;
+        var n=v.getAttribute('name'),t=v.type,enc=encodeURIComponent,val='';
+        if(typeof v.value == 'string'){
+            val=v.value;
+        } else if(v.attr('value')){
+            val=v.v.attr('value');
+        }
 
         //add array to name if multiple value type
         if(t == 'select-multiple' || t == 'checkbox' && !n.match(/\[\]$/)){
