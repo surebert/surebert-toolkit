@@ -27,7 +27,7 @@ Element.prototype.serializeNamedChildren = function(o) {
         if(typeof v.value == 'string'){
             val=v.value;
         } else if(v.attr('value')){
-            val=v.v.attr('value');
+            val=v.attr('value');
         }
 
         //add array to name if multiple value type
