@@ -841,6 +841,23 @@ sb.widget.datePicker.prototype = {
 			this.days.appendTo(this.calendar);
 			this.days.disableSelection();
 
+			this.closeBtn = new sb.element({
+				tag : 'div',
+				className : 'sb_datepicker_close',
+				innerHTML : 'X',
+				title : 'close',
+				styles : {
+					textAlign : 'right',
+					padding : '3px',
+					cursor : 'pointer'
+				},
+                onclick : function(){
+                    sb.widget.datePicker.instance.hide();
+                }
+			});
+
+			this.closeBtn.appendTo(this.calendar);
+            
 			this.help = new sb.element({
 				tag : 'div',
 				className : 'sb_datepicker_help',
@@ -855,8 +872,8 @@ sb.widget.datePicker.prototype = {
 					self.cycleTips();
 				}
 			});
-
-			this.help.appendTo(this.calendar);
+            
+            this.help.appendTo(this.calendar);
 		}
 	},
 
