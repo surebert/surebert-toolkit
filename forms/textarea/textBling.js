@@ -93,7 +93,7 @@ sb.forms.textarea.textBling.prototype = {
 		var btn = new sb.element({
 			tag : 'a',
 			href: 'javascript:void(0);',
-			onclick : function(){return false;},
+			onclick : "return false",
 			innerHTML : bling,
 			title : title || ''
 		});
