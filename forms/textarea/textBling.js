@@ -104,6 +104,8 @@ sb.forms.textarea.textBling.prototype = {
 		}
 		
 		btn.appendTo(this.editBar);
+        
+        return btn;
 		
 	},
 	
