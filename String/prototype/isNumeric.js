@@ -10,6 +10,6 @@ var str = '12';
 var answer = str.isNumeric();
 //answer = true
 */
-String.prototype.isNumeric = function(){
-	return /^\-?\d+?(\.\d+)?$/.test(this);
+String.prototype.isNumeric = function() {
+  return !isNaN(parseFloat(this)) && isFinite(this);
 };
