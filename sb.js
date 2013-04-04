@@ -182,7 +182,46 @@ if(!Array.prototype.forEach){
 		}
 	};
 
-}
+};
+
+if (!Object.keys) {
+    /**
+    @Name: Object.keys
+    @Description: Implements Object.keys in browsers that don't have it
+    taken from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/keys
+    */
+  Object.keys = (function () {
+    var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+        dontEnums = [
+          'toString',
+          'toLocaleString',
+          'valueOf',
+          'hasOwnProperty',
+          'isPrototypeOf',
+          'propertyIsEnumerable',
+          'constructor'
+        ],
+        dontEnumsLength = dontEnums.length;
+ 
+    return function (obj) {
+      if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) throw new TypeError('Object.keys called on non-object');
+ 
+      var result = [];
+ 
+      for (var prop in obj) {
+        if (hasOwnProperty.call(obj, prop)) result.push(prop);
+      }
+ 
+      if (hasDontEnumBug) {
+        for (var i=0; i < dontEnumsLength; i++) {
+          if (hasOwnProperty.call(obj, dontEnums[i])) result.push(dontEnums[i]);
+        }
+      }
+      return result;
+    }
+  })()
+};
 
 /**
 @Description: add console global for browsers that don't have it, so that using it won't throw errors
@@ -191,7 +230,7 @@ if(typeof console === 'undefined'){
 	console = {
 		log : function(){}
 	};
-}
+};
 
 /**
 @Author: Paul Visco of http://paul.estrip.org
