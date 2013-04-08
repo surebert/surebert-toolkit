@@ -77,7 +77,27 @@ sb.events.observer = {
 	@Description: used internally.  These events are handled by the observer
 	*/
 	getEvents : function(){
-		return ['change', 'click', 'mouseup', 'mousedown', 'dblclick', 'contextmenu', 'submit', 'keydown', 'keyup', 'keypress', 'mousemove', 'mouseover', 'mouseout', 'dragstart', 'dragend', 'drag', 'dragenter', 'dragleave', 'drop'];
+		return [
+                    'change', 
+                    'click', 
+                    'contextmenu',
+                    'dblclick', 
+                    'dragstart', 
+                    'dragend', 
+                    'drag', 
+                    'dragenter', 
+                    'dragleave', 
+                    'drop', 
+                    'keydown', 
+                    'keyup', 
+                    'keypress', 
+                    'mousemove', 
+                    'mouseover', 
+                    'mouseout',
+                    'mouseup', 
+                    'mousedown',
+                    'submit'
+                    ];
 	},
 
 	/**
@@ -111,22 +131,14 @@ sb.events.observer = {
 	*/
 	init : function(){
 		this.eventHandlers = [];
-		this.html.events({
-			click : this.delegateEvents,
-			mousedown : this.delegateEvents,
-			dblclick : this.delegateEvents,
-			mouseover : this.delegateEvents,
-			mouseout : this.delegateEvents,
-			mousemove : this.delegateEvents,
-			drag : this.delegateEvents,
-			dragstart : this.delegateEvents,
-			dragend : this.delegateEvents,
-			dragenter : this.delegateEvents,
-			dragleave : this.delegateEvents,
-			drop : this.delegateEvents,
-			submit : this.delegateEvents,
-			change : this.delegateEvents
-		});
+                
+                var events = {};
+                var self = this;
+                this.getEvents().forEach(function(v){
+                    events[v] = self.delegateEvents;
+                });
+                
+		this.html.events(events);
 		
 		//handle keyups
 		this.documentKeyUp = sb.events.add(document, 'keyup', this.delegateEvents);
