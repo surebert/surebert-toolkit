@@ -1868,6 +1868,10 @@ sb.ajax.defaultFormat = 'text';
 @Name: sb.ajax.shortcut
 @Description: Used internally for sb.post and sb.get
 */
+/**
+@Name: sb.ajax.shortcut
+@Description: Used internally for sb.post and sb.get
+*/
 sb.ajax.shortcut = function(url, data, onResponse, params){
 	params = params || {};
 	var aj = new sb.ajax({
@@ -1879,7 +1883,8 @@ sb.ajax.shortcut = function(url, data, onResponse, params){
 	
 	if(typeof onResponse === 'function'){
 		aj.onResponse = onResponse;
-	} else if (typeof onResponse === 'string'){
+	} else if (typeof onResponse === 'string'
+        || (typeof onResponse !== 'undefined' && onResponse.nodeName)){
 		aj.node = onResponse;
 	}
 	aj.fetch();
