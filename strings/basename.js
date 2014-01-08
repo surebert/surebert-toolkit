@@ -1,18 +1,17 @@
 /**
-@Name: String.prototype.basename
+@Name: sb.strings.basename
 @Author: Paul Visco
-@Version: 1.0 11/19/07
 @Description: Grabs the basename from a url
 @Return: String The filename part of the original string
 @Example:
 var myString = 'http://www.google.com/logo.gif';
-var newString = myString.basename();
+var newString = sb.strings.basename(myString);
 //newString = 'logo.gif';
 
 */
-String.prototype.basename = function(){
+sb.strings.basename = function(str){
 	var re = new RegExp("/\\/", "g");
-	var str = this.replace(re, "/");
+	var str = str.replace(re, "/");
 	var filename=str.split("/");
 	return filename[(filename.length - 1)];
 };

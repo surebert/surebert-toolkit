@@ -10,7 +10,7 @@ sb.include('css.rules');
 sb.include('math.rand');
 sb.include('colors.rand');
 sb.include('String.prototype.nl2br');
-sb.include('String.prototype.escapeHTML');
+sb.include('strings.escapeHTML');
 sb.include('Element.prototype.disableSelection');
 sb.include('Element.prototype.mv');
 sb.include('Element.prototype.getPosition');
@@ -131,7 +131,7 @@ sb.consol = {
 				}
 				
 				if(allowHTML !== true){
-					str = String(str).escapeHTML();
+					str = sb.strings.escapeHTML(str);
 				}
 				
 			 	sb.css.rules.write("sbConsolNote", 'display:block;font-size:0.8em;margin-bottom:20px;padding:10px;font-size:12px;font-family:tahoma,verdana;text-align:left;');

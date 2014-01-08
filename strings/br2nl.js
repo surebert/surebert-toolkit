@@ -1,15 +1,14 @@
 /**
-@Name: String.prototype.br2nl
+@Name: sb.strings.br2nl
 @Author: Paul Visco
-@Version: 1.0 11/19/07
 @Description: Converts HTML line breaks "<br />" to new lines "\n"
 @Return: String The original string but replaces breaks with actual new lines
 @Example:
 var myString = 'hello<br />there';
-var newString = myString.br2nl();
+var newString = sb.strings.br2nl(myString);
 //newString = "hello\nthere";
 */
-String.prototype.br2nl = function(){
+sb.strings.br2nl = function(str){
 	var re = new RegExp("<[br /|br]>", "ig");
-	return this.replace(re, "\n");
+	return str.replace(re, "\n");
 };
