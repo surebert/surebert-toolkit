@@ -5,11 +5,11 @@
 @Description: encodes and decodes UTF8
 @Return: String
 @Example:
-var newString = myString.UTF8Decode();
+var newString = sb.strings.UTF8Decode(myString);
 */	
-String.prototype.UTF8Decode = function () {
+sb.strings.UTF8Decode = function (str) {
 
-		var utftext = this;
+	var utftext = str;
         var string = "";
         var i = 0;
         var c = 0, c2 = 0, c3 = 0;
