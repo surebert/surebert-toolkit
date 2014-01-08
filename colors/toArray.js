@@ -15,7 +15,7 @@ var colorArray = sb.colors.toArray('rbg(255,255,255)');
 sb.colors.toArray = function(color){
 
 	if(color.match(/\#/)){
-		color = color.hex2rgb();
+		color = sb.strings.hex2rgb(color);
 	}
 	
 	var re = new RegExp('rgb\\((\\d{1,}),(\\d{1,}),(\\d{1,})\\)', "ig");

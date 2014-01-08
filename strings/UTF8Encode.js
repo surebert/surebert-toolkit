@@ -1,14 +1,13 @@
 /**
-@Name: String.prototype.UTF8Encode
+@Name: sb.strings.UTF8Encode
 @Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Version: 1.0 02/09/09
 @Description: encodes and decodes UTF8
 @Return: String
 @Example:
 var myString = 'hello world';
-var newString = myString.UTF8Encode();
+var newString = sb.strings.UTF8Encode(str);
 */
-String.prototype.UTF8Encode = function () {
+sb.strings.UTF8Encode = function () {
 	
     var string = this.replace(/\r\n/g,"\n");
     var utftext = "";

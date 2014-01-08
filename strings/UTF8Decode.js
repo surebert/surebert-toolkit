@@ -1,7 +1,6 @@
 /**
-@Name: String.prototype.UTF8Decode
+@Name: sb.strings.UTF8Decode
 @Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Version: 1.0 02/09/09
 @Description: encodes and decodes UTF8
 @Return: String
 @Example:

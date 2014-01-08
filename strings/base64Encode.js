@@ -1,23 +1,22 @@
-sb.include('String.prototype.UTF8Encode');
+sb.include('strings.UTF8Encode');
 
 /**
-@Name: String.prototype.base64Encode
+@Name: sb.strings.base64Encode
 @Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Version: 1.0 02/09/09
 @Description: encodes strings into base64
 @Return: String
 @Example:
 var myString = 'hello world';
-var newString = myString.base64Encode();
+var newString = sb.strings.base64Encode(myString);
 */
 
-String.prototype.base64Encode = function(input){
-	var key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+sb.strings.base64Encode = function(str){
+    var key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     var output = "";
     var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
     var i = 0;
 
-    input = this.UTF8Encode();
+    var input = sb.strings.UTF8Encode(str);
 
     while (i < input.length) {
 

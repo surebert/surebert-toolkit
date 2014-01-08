@@ -1,24 +1,23 @@
 sb.include('String.prototype.UTF8Decode');
 
 /**
-@Name: String.prototype.base64Decode
+@Name: sb.strings.base64Decode
 @Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Version: 1.0 02/09/09
 @Description: decodes base64 strings
 @Return: String
 @Example:
 var myString = 'aGVsbG8gd29ybGQ=';
-var newString = myString.base64Decode();
+var newString = sb.strings.base64Decode(myString);
 */
   
-String.prototype.base64Decode= function(input){
-	var key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+String.prototype.base64Decode= function(str){
+    var key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     var output = "";
     var chr1, chr2, chr3;
     var enc1, enc2, enc3, enc4;
     var i = 0;
 
-    input = this.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+    var input = str.replace(/[^A-Za-z0-9\+\/\=]/g, "");
 
     while (i < input.length) {
 

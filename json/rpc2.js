@@ -123,12 +123,12 @@ sb.json.rpc2.client.prototype = {
 	@Description:  Used internally Dispatches a json.rpc2.request via script tag for cross site json service usage
 	 */
 	dispatchViaScript : function(request){
-		sb.include('String.prototype.base64Encode');
+		sb.include('strings.base64Encode');
 		
 		var src = [this.url+'?'];
 		src.push('callback=sb.json.rpc2.callbacks('+this.id+',"'+request.id+'")');
 		src.push('method='+request.method);
-		src.push('params='+sb.json.encode(request.params).base64Encode());
+		src.push('params='+sb.strings.base64Encode(sb.json.encode(request.params)));
 		src.push('id='+this.id);
 
 		var s = new sb.script({
