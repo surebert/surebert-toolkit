@@ -2183,7 +2183,7 @@ sb.nodeList.prototype.getStyle = function(prop, index) {
 
         } else if (el.currentStyle) {
 
-            prop = prop.toCamel();
+            prop = sb.strings.toCamel(prop);
             val = el.currentStyle[prop];
 
         } else if (document.defaultView && document.defaultView.getComputedStyle) {
@@ -2212,12 +2212,12 @@ sb.nodeList.prototype.getStyle = function(prop, index) {
 
                 if (typeof sb.colors.html !== 'undefined') {
                     if (sb.colors.html[val]) {
-                        val = sb.colors.html[val].hex2rgb();
+                        val = sb.strings.hex2rgb(sb.colors.html[val]);
                     }
                 }
 
                 if (val.match("^#")) {
-                    val = val.hex2rgb();
+                    val = sb.strings.hex2rgb(val);
                 }
 
             }
@@ -2957,16 +2957,23 @@ Array.prototype.remove = function(values) {
 };
 
 /**
+ @Name: sb.strings
+ @Type: object
+ @Description: container for string methods so they don't polute global space as string prototypes
+ */
+sb.strings = {};
+
+/**
  @Name: String.prototype.hex2rgb
  @Type: function
  @Description: Used internally, converts hex to rgb
  @Example:
  var str = '#FF0000';
- var newString = str.hex2rgb();
+ var newString = sb.strings.hex2rgb(str);
  //newString = 'rgb(255,0,0)'
  */
-String.prototype.hex2rgb = function(asArray) {
-    var hex = this.replace(/(^\s+|\s+$)/).replace("#", "");
+sb.strings.hex2rgb = function(str, asArray){
+    var hex = str.replace(/(^\s+|\s+$)/).replace("#", "");
     var rgb = parseInt(hex, 16);
     var r = (rgb >> 16) & 0xFF;
     var g = (rgb >> 8) & 0xFF;
@@ -2980,21 +2987,22 @@ String.prototype.hex2rgb = function(asArray) {
 };
 
 /**
- @Name: String.prototype.toCamel
+ @Name: sb.strings.toCamel
  @Type: function
  @Description: Converts all dashes, underscores or whitespace to camelStyle
  @Return: String The original string with dashes converted to camel - useful when switching between CSS and javascript style properties
  @Example:
  var str = 'background-color';
  
- var newString = str.toCamel();
+ var newString = sb.strings.toCamel(str);
  //newString = 'backgroundColor'
  */
-String.prototype.toCamel = function() {
-    return String(this).replace(/[\-_\s]\D/gi, function(m) {
+sb.strings.toCamel = function(str){
+    return String(str).replace(/[\-_\s]\D/gi, function(m) {
         return m.charAt(m.length - 1).toUpperCase();
     });
 };
+
 /**
  @Name: sb.styles
  @Description: Methods used to manipulate CSS and javascript styles
@@ -3346,28 +3354,27 @@ sb.el = function(str) {
     return nl;
 };
 
-/*
- if(sb.browser.agent == 'ie' && sb.browser.version >= 8){
- sb.events.add('html', 'keydown', function(e){
- if(e.target.nodeName === 'INPUT' && e.keyCode === 13){
- e.preventDefault();
- }
- });
- }
- 
- sb.events.add(window, 'resize', sb.browser.measure);
- sb.events.add(window, 'unload', function(e){
- 
- sb.onleavepage.forEach(function(v){
- if(typeof(v) === 'function'){
- v(e);
- }
- });
- sb.events.removeAll();
- });*/
+
+if (sb.browser.agent == 'ie' && sb.browser.version >= 8) {
+    sb.events.add('html', 'keydown', function(e) {
+        if (e.target.nodeName === 'INPUT' && e.keyCode === 13) {
+            e.preventDefault();
+        }
+    });
+}
+
+sb.events.add(window, 'resize', sb.browser.measure);
+sb.events.add(window, 'unload', function(e) {
+
+    sb.onleavepage.forEach(function(v) {
+        if (typeof (v) === 'function') {
+            v(e);
+        }
+    });
+    sb.events.removeAll();
+});
 
 window.sb = document.sb = sb;
-if (typeof sbNo$ === 'undefined') {
+if (typeof sb_no_globals === 'undefined') {
     var $ = sb.$;
-    var $$ = sb.$$;
 }
