@@ -1,5 +1,5 @@
 sb.include('effect');
-sb.include('Array.prototype.iteration');
+sb.include('arrays.iteration');
 sb.include('Element.prototype.cssTransition');
 sb.include('Element.prototype.getNextSibling');
 sb.include('Element.prototype.getDimensions');
@@ -157,7 +157,7 @@ sb.widget.accordian.prototype = {
 				}]).start();
 			};
 			
-			if(section != accordian.sections.last()){
+			if(section != sb.arrays.last(accordian.sections)){
 				section.contents.setStyle('height', sb.widget.accordian.minHeight+'px');
 				
 			} else {

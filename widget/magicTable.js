@@ -483,7 +483,7 @@ sb.widget.magicTable.prototype = {
 		column.values = column.values.map(function(v){
 			return parseInt(v, 10);
 		});
-		alert(column.values.sum());
+		alert(sb.arrays.sum(column.values));
 	};
 	*/
 	onColClick : function(column){},

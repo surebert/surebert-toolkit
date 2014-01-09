@@ -1,4 +1,4 @@
-sb.include('Array.prototype.iteration');
+sb.include('arrays.iteration');
 sb.include('effect');
 sb.include('Element.prototype.cssTransition');
 /**
@@ -64,7 +64,7 @@ sb.widget.flipBook.prototype = {
 				}], 48).start();
 				
 				
-				var img = t.images.cycle();
+				var img = sb.arrays.cycle(t.images);
 				if(typeof img.alt !='undefined'){
 					t.image.alt = img.alt;
 					t.image.title = img.alt;

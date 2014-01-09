@@ -1,5 +1,5 @@
 sb.include('Element.prototype.disableSelection');
-sb.include('Array.prototype.iteration');
+sb.include('arrays.iteration');
 sb.include('date.isDate');
 sb.include('Element.prototype.makeDraggable');
 
@@ -558,7 +558,7 @@ sb.widget.datePicker.prototype = {
 	 myPicker.cycleTips();
 	*/
 	cycleTips : function(){
-		this.days.innerHTML = '<div style="height:100px;"><div><a href="#" class="sb_datep_tip_exit" style="margin-right:20px;">exit help</a> <a href="#" class="sb_datep_tip">next tip</a></div><p>'+sb.widget.datePicker.tips.cycle()+'</p></div>';
+		this.days.innerHTML = '<div style="height:100px;"><div><a href="#" class="sb_datep_tip_exit" style="margin-right:20px;">exit help</a> <a href="#" class="sb_datep_tip">next tip</a></div><p>'+sb.arrays.cycle(sb.widget.datePicker.tips)+'</p></div>';
 	},
 
 	/**

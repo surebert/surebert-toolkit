@@ -26,7 +26,9 @@ if (!Array.prototype.forEach) {
             }
         }
     };
+}
 
+if (!Array.prototype.filter) {
     /**
      @Name: Array.prototype.filter
      @Description: Filters values out of an array that do not return true from the test function.
@@ -55,7 +57,9 @@ if (!Array.prototype.forEach) {
         return n;
 
     };
+}
 
+if (!Array.prototype.every) {
     /**
      @Name: Array.prototype.every
      @Description: Checks to see if every value in an array returns true from the function provided
@@ -84,8 +88,9 @@ if (!Array.prototype.forEach) {
             return true;
         }
     };
+}
 
-
+if (!Array.prototype.indexOf) {
     /**
      @Name: Array.prototype.indexOf
      @Description: Finds the index of the value given within the array.  Return the position of the first matching value.  Rememeber that array start at 0.
@@ -107,7 +112,8 @@ if (!Array.prototype.forEach) {
         }
         return -1;
     };
-
+}
+if (!Array.prototype.lastIndexOf) {
     /**
      @Name: Array.prototype.lastIndexOf
      @Description: Finds the last index of the value given within the array.Rememeber that array start at 0.
@@ -128,7 +134,8 @@ if (!Array.prototype.forEach) {
         }
         return p;
     };
-
+}
+if (!Array.prototype.map) {
     /**
      @Name: Array.prototype.map
      @Description: Runs a function on every item in the array and returns the results in an array.
@@ -153,7 +160,8 @@ if (!Array.prototype.forEach) {
         }
         return n;
     };
-
+}
+if (!Array.prototype.some) {
     /**
      @Name: Array.prototype.some
      @Description: Similar to sb.arrays.every - if some of the function results are true then some returns true
@@ -180,9 +188,138 @@ if (!Array.prototype.forEach) {
             return false;
         }
     };
-
 }
-;
+
+if (!Array.prototype.reduce) {
+    /**
+     @Name: Array.prototype.reduce
+     @Author: Paul Visco
+     @Version: 1.1 11/19/07
+     @Description: This emulates Array.prototype.reduce from javascript 1.6 and is taken from the MDC site reference.  .reduce executes the callback function once for each element present in the array, excluding holes in the array, receiving four arguments: the initial value (or value from the previous callback call), the value of the current element, the current index, and the array over which iteration is occurring.
+     
+     The call to the reduce callback would look something like this: 
+     @Param: function The function to apply the array elements to
+     @Example:
+     myArray.reduce(function(previousValue, currentValue, index, array){
+     // ...
+     });
+     
+     //real examples
+     var total = [0, 1, 2, 3].reduce(function(a, b){ return a + b; });
+     // total == 6
+     
+     var flattened = [[0,1], [2,3], [4,5]].reduce(function(a,b) {
+     return a.concat(b);
+     }, []);
+     // flattened is [0, 1, 2, 3, 4, 5]
+     */
+    Array.prototype.reduce = function(func) {
+        var len = this.length;
+        var rv;
+        if (typeof func != "function") {
+            throw new TypeError();
+        }
+
+        // no value to return if no initial value and an empty array
+        if (len === 0 && arguments.length == 1) {
+            throw new TypeError();
+        }
+
+        var i = 0;
+        if (arguments.length >= 2) {
+            rv = arguments[1];
+        } else {
+
+            do {
+                if (i in this) {
+                    rv = this[i++];
+                    break;
+                }
+
+                // if array contains no values, no initial value to return
+                if (++i >= len) {
+                    throw new TypeError();
+                }
+            }
+            while (true);
+        }
+
+        for (; i < len; i++) {
+            if (i in this) {
+                rv = func.call(null, rv, this[i], i, this);
+            }
+        }
+
+        return rv;
+    };
+}
+
+if (!Array.prototype.reduceRight) {
+    /**
+     @Name: Array.prototype.reduceRight
+     @Description: This emulates Array.prototype.reduceRight from javascript 1.6 and is taken from the MDC site reference.  .reduceRight executes the callback function once for each element present in the array, excluding holes in the array, receiving four arguments: the initial value (or value from the previous callback call), the value of the current element, the current index, and the array over which iteration is occurring.
+     
+     The call to the reduce callback would look something like this: 
+     @Param: function The function to apply the array elements to
+     @Example:
+     myArray.reduceRight(function(previousValue, currentValue, index, array){
+     // ...
+     })
+     
+     //real examples
+     var total = [0, 1, 2, 3].reduceRight(function(a, b) { return a + b; });
+     // total == 6
+     
+     var flattened = [[0, 1], [2, 3], [4, 5]].reduceRight(function(a, b) {
+     return a.concat(b);
+     }, []);
+     // flattened is [4, 5, 2, 3, 0, 1]
+     */
+    Array.prototype.reduceRight = function(func) {
+        var len = this.length;
+        var rv;
+
+        if (typeof func != "function") {
+            throw new TypeError();
+        }
+
+        // no value to return if no initial value, empty array
+        if (len === 0 && arguments.length == 1) {
+            throw new TypeError();
+        }
+
+        var i = len - 1;
+        if (arguments.length >= 2) {
+            rv = arguments[1];
+        } else {
+            do {
+                if (i in this) {
+                    rv = this[i--];
+                    break;
+                }
+
+                // if array contains no values, no initial value to return
+                if (--i < 0) {
+                    throw new TypeError();
+                }
+            } while (true);
+        }
+
+        for (; i >= 0; i--) {
+            if (i in this) {
+                rv = func.call(null, rv, this[i], i, this);
+            }
+        }
+
+        return rv;
+    };
+}
+
+if (!Array.isArray) {
+    Array.isArray = function(vArg) {
+        return Object.prototype.toString.call(vArg) === "[object Array]";
+    };
+}
 
 if (!Object.keys) {
     /**
@@ -1547,6 +1684,8 @@ sb.nodeList.prototype.forEach = Array.prototype.forEach;
 sb.nodeList.prototype.slice = Array.prototype.slice;
 sb.nodeList.prototype.indexOf = Array.prototype.indexOf;
 sb.nodeList.prototype.length = 0;
+sb.nodeList.fn = sb.nodeList.prototype;
+sb.nodeList.methods = sb.nodeList.prototype;
 
 /**
  @Name: sb.nodeList.prototype.$
@@ -2974,7 +3113,7 @@ sb.strings = {};
  * sb.strings.hex2rgb('#FF0000');
  * //'rgb(255,0,0)'
  */
-sb.strings.hex2rgb = function(str, asArray){
+sb.strings.hex2rgb = function(str, asArray) {
     var hex = str.replace(/(^\s+|\s+$)/).replace("#", "");
     var rgb = parseInt(hex, 16);
     var r = (rgb >> 16) & 0xFF;
@@ -2998,7 +3137,7 @@ sb.strings.hex2rgb = function(str, asArray){
  * sb.strings.toCamel('background-color');
  * //'backgroundColor'
  */
-sb.strings.toCamel = function(str){
+sb.strings.toCamel = function(str) {
     return String(str).replace(/[\-_\s]\D/gi, function(m) {
         return m.charAt(m.length - 1).toUpperCase();
     });
