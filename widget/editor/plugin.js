@@ -139,7 +139,7 @@ var save = new sb.widget.editor.plugin({
 	title : 'Clear All Formatting',
 	handler : function(){
 		if(confirm('Are you sure you want to clear all HTML formatting')){
-			this.document.body.innerHTML =this.document.body.innerHTML.stripHTML();
+			this.document.body.innerHTML = sb.strings.stripHTML(this.document.body.innerHTML);
 		}
 		
 	}

@@ -8,16 +8,16 @@ var colorInBetween = sb.colors.getTweenColor('#ACACAC', '#FF0000', 30%);
 */
 sb.include('colors.hex2dec');
 sb.include('colors.dec2hex');
-sb.include('String.prototype.rgb2hex');
+sb.include('strings.rgb2hex');
 
 sb.colors.getTweenColor = function(start, end, percent){
 	
 	if(start.match(/rgb/)){
-		start = start.rgb2hex();
+		start = sb.strings.rgb2hex(start);
 	}
 	
 	if(end.match(/rgb/)){
-		end = end.rgb2hex();
+		end = sb.strings.rgb2hex(end);
 	}
 	
 	start = start.replace(/\#/, '');

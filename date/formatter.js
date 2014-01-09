@@ -1,4 +1,4 @@
-sb.include('String.prototype.numpad');
+sb.include('strings.numpad');
 
 /**
 @Name: sb.date.formatter
@@ -66,10 +66,10 @@ sb.date.formatter.prototype= {
 		//'2011-01-14T00:21:07Z'
 		var d=this.date,self=this;
 
-		d.m = String(d.getMonth()+1).numpad();
+		d.m = sb.strings.numpad(d.getMonth()+1);
 		d.F = sb.dates.months[d.getMonth()];
 		d.M = d.F.substr(0,3);
-		d.d = String(d.getDate()).numpad();
+		d.d = sb.strings.numpad(d.getDate());
 
 		d.l = String(sb.dates.days[d.getDay()]);
 		d.D = d.l.substr(0,3);
@@ -77,15 +77,15 @@ sb.date.formatter.prototype= {
 		d.Y = String(d.getFullYear());
 		d.y = d.Y.substr(2,4);
 
-		d.H = String(d.getHours()).numpad();
+		d.H = sb.strings.numpad(d.getHours());
 		d.G = d.getHours();
 		d.g = (d.H >12) ?  d.H-12 : d.H;
-		d.h = (d.H >12) ?  String(d.H-12).numpad() : d.H;
+		d.h = (d.H >12) ?  sb.strings.numpad(d.H-12) : d.H;
 		d.a = (d.H < 12) ? 'am' : 'pm';
 		d.A = d.a.toUpperCase();
 
 		d.i = d.getMinutes();
-		d.s = String(d.getSeconds()).numpad();
+		d.s = sb.strings.numpad(d.getSeconds());
 		d.U = Date.parse(d)/1000;
 		d.n = d.getMilliseconds();
 		d.date = d.m+'/'+d.d+'/'+d.y;

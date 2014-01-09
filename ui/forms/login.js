@@ -116,14 +116,14 @@ sb.ui.forms.login.prototype = {
 
 	onSubmit : function(e){
 
-		sb.include('String.prototype.md5');
+		sb.include('sb.strings.md5');
 		var self = this;
 
 		self.submitBtn.waiting();
 
 		var data = {
 			uname : self.form.uname.value,
-			pass : self.form.pass.value.md5()
+			pass : sb.strings.md5(self.form.pass.value)
 		};
 
 		var aj = new sb.ajax({

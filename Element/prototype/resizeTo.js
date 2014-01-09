@@ -1,6 +1,6 @@
 sb.include('effect');
 sb.include('Element.prototype.cssTransition');
-sb.include('String.prototype.toNumber');
+sb.include('strings.toNumber');
 
 /**
 @Name:  Element.prototype.resizeTo
@@ -14,8 +14,8 @@ Example: div.resizeTo({height:700, width:700});
 */
 Element.prototype.resizeTo = function(o){
 	
-	var border = this.getStyle('border').toNumber();
-	var padding = this.getStyle('padding').toNumber();
+	var border = sb.strings.toNumber(this.getStyle('border'));
+	var padding = sb.strings.toNumber(this.getStyle('padding'));
 	this.style.overflow='hidden';
 	
 	var transitions = [];

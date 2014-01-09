@@ -1,4 +1,4 @@
-sb.include('String.prototype.trim');
+sb.include('strings.trim');
 
 sb.widget.terminal = function(params){
 	sb.objects.infuse(params, this);
@@ -38,7 +38,7 @@ sb.widget.terminal.prototype = {
 
 					var target = e.target;
 					var data = [];
-					var command = this.value.trim();
+					var command = sb.strings.trim(this.value.trim);
 					if(command === 'server'){
 						this.style.backgroundColor = 'orange';
 						this.style.color = 'brown';

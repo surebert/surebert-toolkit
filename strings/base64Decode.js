@@ -1,16 +1,16 @@
-sb.include('String.prototype.UTF8Decode');
+sb.include('sb.strings.UTF8Decode');
 
 /**
-@Name: sb.strings.base64Decode
-@Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Description: decodes base64 strings
-@Return: String
-@Example:
-var myString = 'aGVsbG8gd29ybGQ=';
-var newString = sb.strings.base64Decode(myString);
-*/
-  
-String.prototype.base64Decode= function(str){
+ * @name sb.strings.base64Decode
+ * @author Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
+ * @description decodes base64 strings
+ * @param {String} str The string to decode
+ * @returns {string} the base64 decoded string
+ * @function
+ * @example 
+ * sb.strings.base64Decode('aGVsbG8gd29ybGQ=');
+ */
+sb.strings.base64Decode = function(str) {
     var key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
     var output = "";
     var chr1, chr2, chr3;
@@ -40,8 +40,8 @@ String.prototype.base64Decode= function(str){
         }
 
     }
-    
-    output = output.UTF8Decode();
+
+    output = sb.strings.UTF8Decode(output);
 
     return output;
 

@@ -9,7 +9,7 @@ sb.include('css.rules');
 
 sb.include('math.rand');
 sb.include('colors.rand');
-sb.include('String.prototype.nl2br');
+sb.include('string.nl2br');
 sb.include('strings.escapeHTML');
 sb.include('Element.prototype.disableSelection');
 sb.include('Element.prototype.mv');

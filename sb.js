@@ -287,7 +287,7 @@ var sb = {
      @Description:  Includes another surebert module.  Make sure you surebert files are in /surebert or that you have set sb.base before using this.
      @Param: module You can include multiple modules by separating with a comma
      @Example:
-     sb.include('String.prototype.nl2br');
+     sb.include('strings.nl2br');
      //or multiple modules
      sb.include('cookies,date');
      */
@@ -2964,13 +2964,15 @@ Array.prototype.remove = function(values) {
 sb.strings = {};
 
 /**
- @Name: String.prototype.hex2rgb
- @Type: function
- @Description: Used internally, converts hex to rgb
- @Example:
- var str = '#FF0000';
- var newString = sb.strings.hex2rgb(str);
- //newString = 'rgb(255,0,0)'
+ * @name sb.strings.hex2rgb
+ * @function
+ * @description Convert hex string to rgb
+ * @param {String} str The hex string
+ * @param {Boolean} asArray Should it be converted to string or array
+ * @returns {Array|String}
+ * @example
+ * sb.strings.hex2rgb('#FF0000');
+ * //'rgb(255,0,0)'
  */
 sb.strings.hex2rgb = function(str, asArray){
     var hex = str.replace(/(^\s+|\s+$)/).replace("#", "");
@@ -2987,15 +2989,14 @@ sb.strings.hex2rgb = function(str, asArray){
 };
 
 /**
- @Name: sb.strings.toCamel
- @Type: function
- @Description: Converts all dashes, underscores or whitespace to camelStyle
- @Return: String The original string with dashes converted to camel - useful when switching between CSS and javascript style properties
- @Example:
- var str = 'background-color';
- 
- var newString = sb.strings.toCamel(str);
- //newString = 'backgroundColor'
+ * @name sb.strings.toCamel
+ * @function
+ * @descrtption Converts all dashes, underscores or whitespace to camelStyle
+ * @param {String} str The non-camel-case string
+ * @returns {String} The original string with dashes converted to camel - useful when switching between CSS and javascript style properties
+ * @example
+ * sb.strings.toCamel('background-color');
+ * //'backgroundColor'
  */
 sb.strings.toCamel = function(str){
     return String(str).replace(/[\-_\s]\D/gi, function(m) {

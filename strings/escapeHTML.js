@@ -1,14 +1,15 @@
 /**
-@Name: sb.strings.escapeHTML
-@Author: Paul Visco
-@Description: Checks to see if a string is empty or not
-@Return: Escapes < and >
-@Example:
-var str = '<p>hello</p>';
-var newString = sb.strings.escapeHTML(str);
-//newString = '&lt;p&gt;hello&lt;/p&gt;'
-*/
-sb.strings.escapeHTML = function(str){
-	str = str.replace(/</g, '&lt;');
-	return str.replace(/>/g, '&gt;');
+ * @name sb.strings.escapeHTML
+ * @author Paul Visco
+ * @description Escapes < and > with &lt; and &gt;
+ * @param {String} str The orig string
+ * @returns {string} with escaped < and >
+ * @function
+ * @example 
+ * sb.strings.escapeHTML('<p>hello</p>');
+ * //'&lt;p&gt;hello&lt;/p&gt;'
+ */
+sb.strings.escapeHTML = function(str) {
+    str = str.replace(/</g, '&lt;');
+    return str.replace(/>/g, '&gt;');
 };

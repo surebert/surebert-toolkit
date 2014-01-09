@@ -1,7 +1,7 @@
 sb.include('effect');
 sb.include('Element.prototype.cssTransition');
 sb.include('colors.getTweenColor');
-sb.include('String.prototype.rgb2hex');
+sb.include('strings.rgb2hex');
 
 /**
 @Name:  Element.prototype.highlight
@@ -35,8 +35,8 @@ Element.prototype.highlight = function(o){
         if (colorString == 'transparent') {
             return 'transparent';
 
-        } else if (colorString.rgb2hex()) {
-            return colorString.rgb2hex(); // Handle Firefox's rgb notation
+        } else if (colorString.match(/^rgb/)) {
+            return sb.strings.rgb2hex(colorString); // Handle Firefox's rgb notation
 
         } else if (colorString.substring(0,1) == '#') {
             return colorString; // Hex color already

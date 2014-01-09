@@ -1,15 +1,16 @@
 /**
-@Name: sb.strings.UTF8Encode
-@Author: Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
-@Description: encodes and decodes UTF8
-@Return: String
-@Example:
-var myString = 'hello world';
-var newString = sb.strings.UTF8Encode(str);
-*/
-sb.strings.UTF8Encode = function () {
-	
-    var string = this.replace(/\r\n/g,"\n");
+ * @name sb.strings.UTF8Encode
+ * @author Paul Visco - Adapted/Taken from http://www.webtoolkit.info/
+ * @description encodes UTF8
+ * @param {String} str The string to encode
+ * @returns {string} The UTF8 encoded string
+ * @function
+ * @example 
+ * sb.strings.UTF8Encode(str);
+ */
+sb.strings.UTF8Encode = function(str) {
+
+    str = str.replace(/\r\n/g, "\n");
     var utftext = "";
 
     for (var n = 0; n < string.length; n++) {
@@ -19,7 +20,7 @@ sb.strings.UTF8Encode = function () {
         if (c < 128) {
             utftext += String.fromCharCode(c);
         }
-        else if((c > 127) && (c < 2048)) {
+        else if ((c > 127) && (c < 2048)) {
             utftext += String.fromCharCode((c >> 6) | 192);
             utftext += String.fromCharCode((c & 63) | 128);
         }

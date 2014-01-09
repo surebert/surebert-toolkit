@@ -1,4 +1,4 @@
-sb.include('String.prototype.stripWhitespace');
+sb.include('strings.stripWhitespace');
 /**
 @Name: sb.colors.toArray
 @Author: Paul Visco
@@ -19,7 +19,7 @@ sb.colors.toArray = function(color){
 	}
 	
 	var re = new RegExp('rgb\\((\\d{1,}),(\\d{1,}),(\\d{1,})\\)', "ig");
-	var colors = re.exec(color.stripWhitespace());
+	var colors = re.exec(sb.strings.stripWhitespace(color));
 	
 	return [colors[1], colors[2], colors[3]];
 	

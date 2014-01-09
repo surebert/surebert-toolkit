@@ -1,5 +1,5 @@
 sb.include('Element.prototype.cssTransition');
-sb.include('String.prototype.md5');
+sb.include('sb.strings.md5');
 /**
 @Name: sb.widget.notifier
 @Description: provides growl like messages for user
@@ -130,7 +130,7 @@ sb.widget.notifier = {
         className = ' '+className || '';
         var t = this,id;
 
-		id = 'i'+((message+className).md5());
+		id = 'i'+sb.strings.md5(message+className);
         if($('#'+id)){
 			return;
 		}

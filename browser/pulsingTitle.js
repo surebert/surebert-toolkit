@@ -1,4 +1,3 @@
-sb.include('String.prototype.stripHTML');
 /**
 @Name: sb.browser.pulsingTitle
 @Description: pulses document title between default and custom to grab user attention

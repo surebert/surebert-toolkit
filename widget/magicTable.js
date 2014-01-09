@@ -1,5 +1,4 @@
-sb.include('String.prototype.stripHTML');
-
+sb.include('strings.stripHTML');
 
 /**
 @Name: sb.widget.magicTable
@@ -284,7 +283,7 @@ sb.widget.magicTable.prototype = {
 				v.innerHTML = v.innerHTML.replace(/ \u2191|\u2193/, '');
 			}
 			
-			if((typeof header == 'string' && header == v.innerHTML.stripHTML().toLowerCase()) || header == v || header == k){
+			if((typeof header == 'string' && header == sb.strings.stripHTML(v.innerHTML).toLowerCase()) || header == v || header == k){
 				
 				col = k;
 				var customSort = v.className.match(new RegExp(self.classes.force_sort+"_(\\w+)"));
@@ -313,7 +312,7 @@ sb.widget.magicTable.prototype = {
 		trs.forEach(function(tr,k,a){
 			if(tr.parentNode == self.body){
 				rows.push({
-					text: tr.cells[col].innerHTML.stripHTML(), 
+					text: sb.strings.stripHTML(tr.cells[col].innerHTML), 
 					td: tr.cells[col],
 					tr: tr
 				});
@@ -371,7 +370,7 @@ sb.widget.magicTable.prototype = {
 			throw("argument must be th node or cellIndex");
 		}
 		
-		var str = cell.innerHTML.stripHTML();
+		var str = sb.strings.stripHTML(cell.innerHTML);
 		str = str.replace(/ \u2191|\u2193/, '');
 		return str;
 	},
@@ -403,7 +402,7 @@ sb.widget.magicTable.prototype = {
 			throw("argument must be td node or cellIndex");
 		}
 		
-		return cell.innerHTML.stripHTML();
+		return sb.strings.stripHTML(cell.innerHTML);
 	},
 	
 	/**
@@ -687,7 +686,7 @@ sb.widget.magicTable.prototype = {
 							if(tr.parentNode == self.body){
 								var td = tr.cells[target.cellIndex];
 								column.tds.add(td);
-								column.values.push(td.innerHTML.stripHTML());
+								column.values.push(sb.strings.stripHTML(td.innerHTML));
 							}
 						});
 						
