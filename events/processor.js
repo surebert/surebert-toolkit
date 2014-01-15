@@ -1,3 +1,5 @@
+sb.include('$.methods.flashBg');
+
 /**
 @Name: sb.events.processor
 @Description: Handles events with framework.  events are added to any elements

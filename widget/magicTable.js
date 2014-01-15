@@ -205,7 +205,7 @@ sb.widget.magicTable.prototype = {
 		});
 		
 		arr.forEach(function(v,k){
-			if(rows.inArray(k) ){
+			if(sb.arrays.inArray(rows, k) ){
 				v.remove();
 			}
 		});

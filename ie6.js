@@ -88,7 +88,7 @@ sb.dom.createNamedElement = function(t, n, c) {
 };
 	
 /**
-@Name: sb.$.attrConvert
+@Name: sb.selector.attrConvert
 @Description: Used Internally
 */
 sb.nodeList.attrConvert = function(attr){

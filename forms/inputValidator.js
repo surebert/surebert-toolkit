@@ -117,7 +117,7 @@ sb.forms.inputValidator = function(o){
 				return;
 			}
 		}
-		if(self.validateOnClick == true && ['checkbox', 'radio'].inArray(e.target.attr('type'))){
+		if(self.validateOnClick == true && sb.arrays.inArray(['checkbox', 'radio'], e.target.attr('type'))){
 			self._validate(e);
 		}
 	});

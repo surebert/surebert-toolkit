@@ -57,7 +57,7 @@ sb.events.observer = {
 	*/
 	observe : function(eventHandler){
 		
-		if(!this.eventHandlers.inArray(eventHandler)){
+		if(!sb.arrays.inArray(this.eventHandlers, eventHandler)){
 			this.eventHandlers.push(eventHandler);
 		}
 	},
