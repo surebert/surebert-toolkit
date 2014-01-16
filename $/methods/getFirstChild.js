@@ -1,7 +1,7 @@
 /**
  * @name sb.$.methods.getFirstChild
  * @author Paul Visco
- * @description returns the first element type node (nodeType ==1) of a parentNode
+ * @description returns the first child element
  * @returns {Object} element that is the first child
  * @function
  * @example

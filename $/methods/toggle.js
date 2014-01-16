@@ -5,7 +5,7 @@
  * @returns {Object} self, the $ selection it was called on
  * @function
  * @example 
- * myElement.toggle();
+ * $('#id').toggle();
  */
 sb.$.methods.toggle = function() {
     this.forEach(function(el) {
