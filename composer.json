@@ -1,0 +1,15 @@
+{
+    "name": "surebert/toolkit",
+    "description": "Surebert javascript toolkit for use in web apps",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Paul Visco",
+            "email": "paulsidekick@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+
+    }
+}
