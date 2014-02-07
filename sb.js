@@ -1361,111 +1361,134 @@ if (typeof console === 'undefined') {
     };
 
     /**
-     @Name: sb.browser
-     @Description: Find out what browser we are using and gets the query string and screen data
-     */
-    sb.browser = {
-        /**
-         @Name: sb.browser.agent
-         @Type: string
-         @Description: The browser agent in short form op=opera, sf=safari, ff=firefox, ie=iexplorer
-         */
-        agent: '',
-        /**
-         @Name: sb.browser.version
-         @Type: integer
-         @Description: The version number of the browser
-         */
-        version: 0,
-        /**
-         @Name: sb.browser.getAgent
-         @Type: function
-         @Description: Used Internally. Determines the agent, version, and os of the client.
-         */
-        getAgent: function() {
+    @Name: sb.browser
+    @Description: Find out what browser we are using and gets the query string and screen data
+    */
+    sb.browser ={
 
-            var opera = new RegExp("opera/(\\d+.\\d+)", "i");
-            var safari = new RegExp("safari/(\\d{3})", "i");
-            var chrome = new RegExp("chrome/(\\d+\\.\\d+)", "i");
-            var firefox = new RegExp("firefox/(\\d+.\\d+)", "i");
-            var ie = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-            var agent = window.navigator.userAgent;
-            var str;
+	/**
+	@Name: sb.browser.ie6
+	@Type: boolean
+	@Description: Is the page being displayed with IE 6. Normally you would access this information through sb.browser.agent and sb.browser.version but I added this for convenience with ie6
+	@Example.
+	if(sb.browser.ie6){
+		//do something
+	}
+	*/
+	ie6 : 0,
 
-            if (window.opera && window.document.childNodes) {
-                this.agent = 'op';
-                str = agent.match(opera);
-                this.version = str[1];
+	/**
+	@Name: sb.browser.agent
+	@Type: string
+	@Description: The browser agent in short form op=opera, sf=safari, ff=firefox, ie=iexplorer
+	*/
+	agent : '',
 
-            } else if (document.all) {
+	/**
+	@Name: sb.browser.version
+	@Type: integer
+	@Description: The version number of the browser
+	*/
+	version : 0,
 
-                var dbs = document.body.style;
-                this.agent = 'ie';
+	/**
+	@Name: sb.browser.getAgent
+        @Type: function
+	@Description: Used Internally. Determines the agent, version, and os of the client.
+	*/
+	getAgent : function(){
 
-                if (document.documentMode) {
-                    this.version = document.documentMode;
-                } else {
-                    this.version = 5;
-                    if (document.compatMode && document.compatMode == "CSS1Compat") {
-                        this.version = 7; // standards mode
-                    } else if (dbs.textOverflow != undefined) {
-                        this.version = 6;
-                    }
-                }
-            } else if (agent.match(firefox)) {
-                this.agent = 'ff';
-                str = agent.match(firefox);
-                this.version = str[1];
-            } else if (agent.match(chrome)) {
-                this.agent = 'cr';
-                str = agent.match(chrome);
-                this.version = str[1];
-            } else if (agent.match(safari)) {
-                str = agent.match(safari);
-                this.agent = 'sf';
-                if (agent.match(/iphone/i)) {
-                    this.agent += '_iphone';
-                } else if (agent.match(/ipod/i)) {
-                    this.agent += '_ipod';
-                }
-                this.version = str[1];
+		var opera = new RegExp("opera/(\\d+.\\d+)", "i");
+		var safari = new RegExp("safari/(\\d{3})", "i");
+		var chrome = new RegExp("chrome/(\\d+\\.\\d+)", "i");
+		var firefox = new RegExp("firefox/(\\d+.\\d+)", "i");
+		var ie11p = new RegExp("Windows NT.*rv:(.*)\\)");
+		var agent = window.navigator.userAgent;
+		var str;
+		if(window.opera && window.document.childNodes) {
+			this.agent = 'op';
+			str = agent.match(opera);
+			this.version = str[1];
+                        
+		} else if (document.all || (agent.match(ie11p) && !agent.match(firefox))){
+			
+			this.agent = 'ie';
+			var verMap = {
+                            "5.5": "5.5",
+                            "5.6": "6",
+                            "5.7": "7",
+                            "5.8": "8",
+                            "9": "9",
+                            "10": "10"
+                        };
+                        var ver = new Function("/*@cc_on return @_jscript_version; @*/")();
+                        
+                        if (ver !== undefined) {
+                            this.version = String(ver).replace(/5\./, "");
+                            if(this.version == 6){
+                                sb.browser.ie6 = 1;
+                            }
+                        } else {
+                            str = agent.match(ie11p);
+                            this.version = str[1];
+                        }
+                        
+		} else if(agent.match(firefox)){
+			this.agent = 'ff';
+			str = agent.match(firefox);
+			this.version = str[1];
+		} else if(agent.match(chrome)){
+			this.agent = 'cr';
+			str = agent.match(chrome);
+			this.version = str[1];
+		} else if(agent.match(safari)){
+			str = agent.match(safari);
+			this.agent = 'sf';
+			if(agent.match(/iphone/i)){
+				this.agent += '_iphone';
+			} else if(agent.match(/ipod/i)){
+				this.agent += '_ipod';
+			}
+			this.version = str[1];
 
-            } else {
-                this.agent = 'other';
-            }
+		} else {
+			this.agent='other';
+		}
 
-            return this.agent;
-        },
-        /**
-         @Name: sb.browser.measure
-         @Description: Measures the inside view area of the window
-         @Return Array Returns the an array of width and height of the inside of the client's view area
-         @Example:
-         var pos = sb.browser.measure();
-         //pos = [800, 642]
-         */
-        measure: function() {
-            sb.browser.w = 0;
-            sb.browser.h = 0;
-            if (typeof window.innerWidth === 'number') {
-                sb.browser.w = window.innerWidth;
-                sb.browser.h = window.innerHeight;
-            } else if (window.document.documentElement && (window.document.documentElement.clientWidth || window.document.documentElement.clientHeight)) {
-                sb.browser.w = document.documentElement.clientWidth;
-                sb.browser.h = document.documentElement.clientHeight;
-            }
+		return this.agent;
+	},
 
-            return [sb.browser.w, sb.browser.h];
-        },
-        /**
-         @Name: sb.browser.init
-         @Description: Used Internally
-         */
-        init: function() {
+	/**
+	@Name: sb.browser.measure
+	@Description: Measures the inside view area of the window
+	@Return Array Returns the an array of width and height of the inside of the client's view area
+	@Example:
+	var pos = sb.browser.measure();
+	//pos = [800, 642]
+	*/
+	measure : function(){
+		sb.browser.w=0;
+		sb.browser.h =0;
+		if( typeof window.innerWidth === 'number' ) {
+			sb.browser.w = window.innerWidth;
+			sb.browser.h = window.innerHeight;
+		} else if( window.document.documentElement && ( window.document.documentElement.clientWidth || window.document.documentElement.clientHeight ) ) {
+			sb.browser.w = document.documentElement.clientWidth;
+			sb.browser.h = document.documentElement.clientHeight;
+		}
 
-            this.getAgent();
-            this.measure();
-        }
+		return [sb.browser.w, sb.browser.h];
+	},
+
+	/**
+	@Name: sb.browser.init
+	@Description: Used Internally
+	*/
+	init : function(){
+
+		this.getAgent();
+		this.measure();
+	}
     };
 
     sb.browser.init();
