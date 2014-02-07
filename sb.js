@@ -1306,7 +1306,7 @@ sb.browser ={
 
 	/**
 	@Name: sb.browser.getAgent
-    @Type: function
+        @Type: function
 	@Description: Used Internally. Determines the agent, version, and os of the client.
 	*/
 	getAgent : function(){
@@ -1315,33 +1315,37 @@ sb.browser ={
 		var safari = new RegExp("safari/(\\d{3})", "i");
 		var chrome = new RegExp("chrome/(\\d+\\.\\d+)", "i");
 		var firefox = new RegExp("firefox/(\\d+.\\d+)", "i");
-		var ie = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+		var ie11p = new RegExp("Windows NT.*rv:(.*)\\)");
 		var agent = window.navigator.userAgent;
 		var str;
-
 		if(window.opera && window.document.childNodes) {
 			this.agent = 'op';
 			str = agent.match(opera);
 			this.version = str[1];
-
-		} else if (document.all){
-			var dbs=document.body.style;
+                        
+		} else if (document.all || (agent.match(ie11p) && !agent.match(firefox))){
+			
 			this.agent = 'ie';
-			if(dbs.opacity!=undefined) {
-				this.version = 9;
-			} else if(dbs.msBlockProgression!=undefined){
-				this.version = 8;
-				if (ie.exec(agent) != null){
-					this.version = parseFloat(RegExp.$1);
-				}
-			} else if(dbs.msInterpolationMode!=undefined){
-				this.version = 7;
-			} else if(dbs.textOverflow!=undefined){
-				this.version = 6;
-				sb.browser.ie6 =1;
-			} else {
-				this.version = 5;
-			}
+			var verMap = {
+                            "5.5": "5.5",
+                            "5.6": "6",
+                            "5.7": "7",
+                            "5.8": "8",
+                            "9": "9",
+                            "10": "10"
+                        };
+                        var ver = new Function("/*@cc_on return @_jscript_version; @*/")();
+                        
+                        if (ver !== undefined) {
+                            this.version = String(ver).replace(/5\./, "");
+                            if(this.version == 6){
+                                sb.browser.ie6 = 1;
+                            }
+                        } else {
+                            str = agent.match(ie11p);
+                            this.version = str[1];
+                        }
+                        
 		} else if(agent.match(firefox)){
 			this.agent = 'ff';
 			str = agent.match(firefox);
