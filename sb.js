@@ -1413,14 +1413,6 @@ if (typeof console === 'undefined') {
 		} else if (document.all || (agent.match(ie11p) && !agent.match(firefox))){
 			
 			this.agent = 'ie';
-			var verMap = {
-                            "5.5": "5.5",
-                            "5.6": "6",
-                            "5.7": "7",
-                            "5.8": "8",
-                            "9": "9",
-                            "10": "10"
-                        };
                         var ver = new Function("/*@cc_on return @_jscript_version; @*/")();
                         
                         if (ver !== undefined) {
