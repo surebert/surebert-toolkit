@@ -966,7 +966,7 @@ sb.widget.datePicker.tips = [
 @Name: sb.widget.datePicker.months
 @Description: Array with month names, could be overridden in other language scenarios
 */
-sb.widget.datePicker.months = ["January", "Feburary", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+sb.widget.datePicker.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /**
 @Name: sb.widget.datePicker.handleKeyEvents
