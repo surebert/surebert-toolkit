@@ -147,6 +147,7 @@ sb.widget.dropUpload.prototype = {
 	@Description: Used internally
 	*/
 	onDropHandler : function(e){
+  
 		var self = this,i = 0;
 		e.preventDefault();
 		e.stopPropagation();
@@ -212,6 +213,13 @@ sb.widget.dropUpload.prototype = {
 			 self.onDragEnter(e);
 			return false;
 		}, false);
+        
+        this.target.addEventListener("dragleave",  function(e){
+
+			e.preventDefault();
+			 self.onDragLeave(e);
+			return false;
+		}, false);
 		this.target.addEventListener("dragover", function(e){
 
 			e.preventDefault();
@@ -222,6 +230,33 @@ sb.widget.dropUpload.prototype = {
 			e.files = e.dataTransfer.files;
 			self.onDropHandler(e);
 		}, false);
+        
+        if(!this.onClick){
+            this.target.addEventListener("click", function(e){
+
+                var target = e.target;
+                if(!self.fileSelector){
+
+                    self.fileSelector = new sb.element({
+                        tag : 'input'
+                    });
+
+                    self.fileSelector.onchange = function(e){
+                        e.dataTransfer = {};
+                        e.dataTransfer.files = this.files;
+                        self.onDropHandler(e);
+                    };
+
+                   self.fileSelector.attr('multiple', 'multiple');
+                   self.fileSelector.attr('type', 'file');
+                   self.fileSelector.appendTo(self.target);
+                   self.fileSelector.hide();
+                }
+
+                self.fileSelector.click();
+            });
+        }
+        
 
 	},
 
