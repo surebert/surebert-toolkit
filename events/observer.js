@@ -139,19 +139,10 @@ sb.events.observer = {
                 });
                 
 		this.html.events(events);
-		
-		//handle keyups
-		this.documentKeyUp = sb.events.add(document, 'keyup', this.delegateEvents);
 
 		//handle contextmenu
 		this.documentContextMenu = sb.events.add(document, 'contextmenu', this.delegateEvents);
 
-		//handle keydowns
-		this.documentKeyDown = sb.events.add(document, 'keydown', this.delegateEvents);
-		
-		//handle keypresses
-		this.documentKeyPress = sb.events.add(document, 'keypress', this.delegateEvents);
-		
 		if(sb.browser.agent === 'ie' && sb.browser.version < 9){
 		
 			this.handleIEEventBubbles();
