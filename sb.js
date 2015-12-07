@@ -2464,7 +2464,7 @@ sb.events = {
 	*/
 	add : function() {
 		
-		if ( window.attachEvent){
+		if (window.attachEvent){
 			return function(el, type, fn) {
 				el = sb.$(el);
 				
@@ -2587,10 +2587,10 @@ sb.events = {
 	*/
 	remove : function(evt){
 
-		if (evt.el.removeEventListener){
-			evt.el.removeEventListener( evt.type, evt.fn, false );
-		} else if (evt.el.detachEvent){
+		if (evt.el.detachEvent){
 			evt.el.detachEvent( "on"+evt.type, evt.fn );
+		} else if (evt.el.removeEventListener){
+			evt.el.removeEventListener( evt.type, evt.fn, false );
 		}
 
 	},
